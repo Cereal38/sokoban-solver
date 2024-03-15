@@ -36,7 +36,7 @@ public abstract class IA {
 	public static IA nouvelle(Jeu j) {
 		IA resultat = null;
 		// Méthode de fabrication pour l'IA, qui crée le bon objet selon la config
-		String type = Configuration.lisChaine("IA");
+		String type = Configuration.IA;
 		switch (type) {
 			case "Aleatoire":
 				resultat = new IAAleatoire();

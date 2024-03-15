@@ -27,22 +27,15 @@ package Modele;
  */
 
 import Global.Configuration;
-import Patterns.Commande;
-import Structures.Iterateur;
 import Structures.Sequence;
 
-public class Coup implements Commande {
+public class Coup {
 	Mouvement pousseur, caisse;
 	Sequence<Marque> marques;
 	int dirPousseurL, dirPousseurC;
-	Niveau niv;
 
-	public Coup() {
+	Coup() {
 		marques = Configuration.nouvelleSequence();
-	}
-
-	void fixeNiveau(Niveau n) {
-		niv = n;
 	}
 
 	private Mouvement creeDeplacement(String nom, Mouvement existant, int dL, int dC, int vL, int vC) {
@@ -92,46 +85,5 @@ public class Coup implements Commande {
 
 	public int dirPousseurC() {
 		return dirPousseurC;
-	}
-
-	void appliqueMouvement(Mouvement m, int dir) {
-		if (m != null) {
-			m.fixeDirection(dir);
-			int contenu = niv.contenu(m.depuisL(), m.depuisC());
-			if (contenu != 0) {
-				if (niv.estOccupable(m.versL(), m.versC())) {
-					niv.supprime(contenu, m.depuisL(), m.depuisC());
-					niv.ajoute(contenu, m.versL(), m.versC());
-				} else {
-					Configuration.alerte("Mouvement impossible, la destination est occupée : " + m);
-				}
-			} else {
-				Configuration.alerte("Mouvement impossible, aucun objet à déplacer : " + m);
-			}
-		}
-	}
-
-	void echangeMarques() {
-		Iterateur<Marque> it2 = marques.iterateur();
-		while (it2.aProchain()) {
-			Marque m = it2.prochain();
-			int ancienneMarque = niv.marque(m.ligne, m.colonne);
-			niv.fixerMarque(m.valeur, m.ligne, m.colonne);
-			m.valeur = ancienneMarque;
-		}
-	}
-
-	@Override
-	public void execute() {
-		appliqueMouvement(caisse, Mouvement.AVANT);
-		appliqueMouvement(pousseur, Mouvement.AVANT);
-		echangeMarques();
-	}
-
-	@Override
-	public void desexecute() {
-		appliqueMouvement(pousseur, Mouvement.ARRIERE);
-		appliqueMouvement(caisse, Mouvement.ARRIERE);
-		echangeMarques();
 	}
 }

@@ -27,8 +27,9 @@ package Modele;
  */
 
 import Global.Configuration;
+import Structures.Iterateur;
 
-public class Niveau extends Historique<Coup> implements Cloneable {
+public class Niveau implements Cloneable {
 	static final int VIDE = 0;
 	static final int MUR = 1;
 	static final int POUSSEUR = 2;
@@ -40,7 +41,6 @@ public class Niveau extends Historique<Coup> implements Cloneable {
 	int pousseurL, pousseurC;
 	int nbButs;
 	int nbCaissesSurBut;
-	int nbPas, nbPoussees;
 
 	Niveau() {
 		cases = new int[1][1];
@@ -75,12 +75,12 @@ public class Niveau extends Historique<Coup> implements Cloneable {
 		nom = s;
 	}
 
-	public void videCase(int i, int j) {
+	void videCase(int i, int j) {
 		redimensionne(i, j);
 		cases[i][j] = VIDE;
 	}
 
-	public void supprime(int contenu, int i, int j) {
+	void supprime(int contenu, int i, int j) {
 		if (aBut(i, j)) {
 			if (aCaisse(i, j) && ((contenu & CAISSE | contenu & BUT) != 0))
 				nbCaissesSurBut--;
@@ -110,41 +110,8 @@ public class Niveau extends Historique<Coup> implements Cloneable {
 		cases[i][j] = resultat;
 	}
 
-	public int contenu(int i, int j) {
+	int contenu(int i, int j) {
 		return cases[i][j] & (POUSSEUR | CAISSE);
-	}
-
-	int decompteMouvement(Mouvement m) {
-		if (m != null)
-			return m.decompte();
-		else
-			return 0;
-	}
-
-	void decomptes(Coup cp) {
-		nbPas += decompteMouvement(cp.pousseur());
-		nbPoussees += decompteMouvement(cp.caisse());
-	}
-
-	@Override
-	public void faire(Coup cp) {
-		cp.fixeNiveau(this);
-		decomptes(cp);
-		super.faire(cp);
-	}
-
-	@Override
-	public Coup annuler() {
-		Coup cp = super.annuler();
-		decomptes(cp);
-		return cp;
-	}
-
-	@Override
-	public Coup refaire() {
-		Coup cp = super.refaire();
-		decomptes(cp);
-		return cp;
 	}
 
 	public Coup elaboreCoup(int dLig, int dCol) {
@@ -169,26 +136,52 @@ public class Niveau extends Historique<Coup> implements Cloneable {
 		return null;
 	}
 
+	void appliqueMouvement(Mouvement m) {
+		if (m != null) {
+			int contenu = contenu(m.depuisL(), m.depuisC());
+			if (contenu != 0) {
+				if (estOccupable(m.versL(), m.versC())) {
+					supprime(contenu, m.depuisL(), m.depuisC());
+					ajoute(contenu, m.versL(), m.versC());
+				} else {
+					Configuration.alerte("Mouvement impossible, la destination est occupée : " + m);
+				}
+			} else {
+				Configuration.alerte("Mouvement impossible, aucun objet à déplacer : " + m);
+			}
+		}
+	}
+
+	void joue(Coup cp) {
+		appliqueMouvement(cp.caisse());
+		appliqueMouvement(cp.pousseur());
+		Iterateur<Marque> it2 = cp.marques().iterateur();
+		while (it2.aProchain()) {
+			Marque m = it2.prochain();
+			fixerMarque(m.valeur, m.ligne, m.colonne);
+		}
+	}
+
 	Coup deplace(int i, int j) {
 		Coup cp = elaboreCoup(i, j);
 		if (cp != null)
-			faire(cp);
+			joue(cp);
 		return cp;
 	}
 
-	public void ajouteMur(int i, int j) {
+	void ajouteMur(int i, int j) {
 		ajoute(MUR, i, j);
 	}
 
-	public void ajoutePousseur(int i, int j) {
+	void ajoutePousseur(int i, int j) {
 		ajoute(POUSSEUR, i, j);
 	}
 
-	public void ajouteCaisse(int i, int j) {
+	void ajouteCaisse(int i, int j) {
 		ajoute(CAISSE, i, j);
 	}
 
-	public void ajouteBut(int i, int j) {
+	void ajouteBut(int i, int j) {
 		ajoute(BUT, i, j);
 	}
 
@@ -267,13 +260,5 @@ public class Niveau extends Historique<Coup> implements Cloneable {
 
 	public void fixerMarque(int m, int i, int j) {
 		cases[i][j] = (cases[i][j] & 0xFF) | (m << 8);
-	}
-
-	public int nbPas() {
-		return nbPas;
-	}
-
-	public int nbPoussees() {
-		return nbPoussees;
 	}
 }
