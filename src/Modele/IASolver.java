@@ -5,13 +5,13 @@ import java.util.Random;
 import Global.Configuration;
 import Structures.Sequence;
 
-class IAAleatoire extends IA {
+class IASolver extends IA {
   Random r;
   // Couleurs au format RGB (rouge, vert, bleu, un octet par couleur)
   final static int VERT = 0x00CC00;
   final static int MARRON = 0xBB7755;
 
-  public IAAleatoire() {
+  public IASolver() {
     r = new Random();
   }
 
