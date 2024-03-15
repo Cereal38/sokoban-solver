@@ -64,7 +64,7 @@ class IASolver extends IA {
     // Renvoie l'indice de l'élément si il existe, -1 sinon
     public int existe(int l, int c) {
       for (int i = 0; i < nb_eleme; i++) {
-        if (position[i].getX() == c && position[i].getY() == l)
+        if (position[i].x == c && position[i].y == l)
           return i;
       }
       return -1;
@@ -82,19 +82,19 @@ class IASolver extends IA {
     }
 
     public boolean haut(int i) {
-      return estAccessible((int) position[i].getX() - 1, (int) position[i].getY());
+      return estAccessible(position[i].x - 1, position[i].y);
     }
 
     public boolean bas(int i) {
-      return estAccessible((int) position[i].getX() + 1, (int) position[i].getY());
+      return estAccessible(position[i].x + 1, position[i].y);
     }
 
     public boolean gauche(int i) {
-      return estAccessible((int) position[i].getX(), (int) position[i].getY() - 1);
+      return estAccessible(position[i].x, position[i].y - 1);
     }
 
     public boolean droite(int i) {
-      return estAccessible((int) position[i].getX(), (int) position[i].getY() + 1);
+      return estAccessible(position[i].x, position[i].y + 1);
     }
 
     // Indique si la case demandé est accessible
