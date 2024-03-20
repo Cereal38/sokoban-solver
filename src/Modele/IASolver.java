@@ -8,6 +8,7 @@ import java.awt.Point;
 
 import Global.Configuration;
 import Structures.Sequence;
+import Structures.SequenceListe;
 
 class IASolver extends IA {
   // Couleurs au format RGB (rouge, vert, bleu, un octet par couleur)
@@ -15,9 +16,75 @@ class IASolver extends IA {
   final static int MARRON = 0xBB7755;
   CasesAccessibles cases = null;
   CaissesDeplacables caisses = null;
-  // Toutes les caisses accessibles à l'instant t
-  Point[] caissesAccessibles;
+
   int nb_caisses = 0;
+
+  class EtatDuNiveau {
+    CaissesDeplacables caisses;
+    CasesAccessibles cases;
+    int joueurC;
+    int joueurL;
+
+    void EtatDuNiveau(CasesAccessibles ca, CaissesDeplacables cd, int jC, int jL) {
+      cases = ca;
+      caisses = cd;
+      joueurC = jC;
+      joueurL = jL;
+    }
+  }
+
+  class Solutions {
+    // 1 Solution = 1 tableau de tuples correspondant aux mouvements de caisses
+    // (Position pousseur, Position caisse)
+    // Solutions = tableau de solutions
+    SequenceListe<EtatDuNiveau>[] solutions;
+    // Enchainement de déplacement de caisses
+
+    public void trouverSolutions() {
+      SequenceListe<EtatDuNiveau> deplacements = new SequenceListe();
+      // solutions = trouverSolutionsRec(niveau, niveau.pousseurL, niveau.pousseurC,
+      // deplacements);
+    }
+
+    // Prend l'état actuel
+    private EtatDuNiveau[] trouverSolutionsRec(Niveau etatDuNiveau, int joueurL, int joueurC,
+        SequenceListe<EtatDuNiveau> anciennesPositions) {
+
+      // Cas de base
+      if (etatDuNiveau.estTermine()) {
+        return null;
+      }
+
+      CasesAccessibles cases = new CasesAccessibles(etatDuNiveau.colonnePousseur(), etatDuNiveau.lignePousseur());
+      CaissesDeplacables caisses = new CaissesDeplacables();
+      caisses.trouverMouvementsCaisses(cases);
+
+      for (int i = 0; i < caisses.nb_mouvements; i++) {
+        Niveau etatSuivant = etatDuNiveau.clone();
+        // L'ancienne position du joueur devient vide
+        etatSuivant.cases[joueurL][joueurC] = Niveau.VIDE;
+        // L'ancienne position de la caisse devient la position du joueur
+        int nouvellePositionJoueurC = caisses.mouvementsPossibles[i][0].x;
+        int nouvellePositionJoueurL = caisses.mouvementsPossibles[i][0].y;
+        etatSuivant.cases[nouvellePositionJoueurL][nouvellePositionJoueurC] = Niveau.POUSSEUR;
+        // pousseur.x - caisse.x
+        // gauche = 1 , droite = -1
+        // pousseur.y - caisse.y
+        // bas = -1, haut = 1
+        // si le res != 0 alors caisse + res
+        // On calcul la nouvelle position de la caisse
+        int mouvementX = (caisses.mouvementsPossibles[i][0].x - caisses.mouvementsPossibles[i][1].x) * -1;
+        int mouvementY = (caisses.mouvementsPossibles[i][0].y - caisses.mouvementsPossibles[i][1].y) * -1;
+        etatSuivant.cases[caisses.mouvementsPossibles[i][1].y + mouvementY][caisses.mouvementsPossibles[i][1].x
+            + mouvementX] = Niveau.CAISSE;
+
+        // trouverSolutionsRec(etatSuivant, nouvellePositionJoueurL,
+        // nouvellePositionJoueurC);
+      }
+
+      return null;
+    }
+  }
 
   class CaissesDeplacables {
     Point[][] mouvementsPossibles;
@@ -33,34 +100,50 @@ class IASolver extends IA {
         // Si la case est accessible, on regarde si la case à l'opposée est libre (ou un
         // but)
         // Si vrai on ajoute le mouvement
-        if (casesAccessibles.existe(caissesAccessibles[i].y - 1, caissesAccessibles[i].x) != -1) {
-          if (niveau.estOccupable(caissesAccessibles[i].y + 1, caissesAccessibles[i].x)) {
-            mouvementsPossibles[nb_mouvements][0] = new Point(caissesAccessibles[i].x, caissesAccessibles[i].y - 1);
-            mouvementsPossibles[nb_mouvements][1] = new Point(caissesAccessibles[i].x, caissesAccessibles[i].y);
+        if (casesAccessibles.existe(casesAccessibles.caissesAccessibles[i].y - 1,
+            casesAccessibles.caissesAccessibles[i].x) != -1) {
+          if (niveau.estOccupable(casesAccessibles.caissesAccessibles[i].y + 1,
+              casesAccessibles.caissesAccessibles[i].x)) {
+            mouvementsPossibles[nb_mouvements][0] = new Point(casesAccessibles.caissesAccessibles[i].x,
+                casesAccessibles.caissesAccessibles[i].y - 1);
+            mouvementsPossibles[nb_mouvements][1] = new Point(casesAccessibles.caissesAccessibles[i].x,
+                casesAccessibles.caissesAccessibles[i].y);
             nb_mouvements++;
           }
         }
         // Pareil pour le bas
-        if (casesAccessibles.existe(caissesAccessibles[i].y + 1, caissesAccessibles[i].x) != -1) {
-          if (niveau.estOccupable(caissesAccessibles[i].y - 1, caissesAccessibles[i].x)) {
-            mouvementsPossibles[nb_mouvements][0] = new Point(caissesAccessibles[i].x, caissesAccessibles[i].y + 1);
-            mouvementsPossibles[nb_mouvements][1] = new Point(caissesAccessibles[i].x, caissesAccessibles[i].y);
+        if (casesAccessibles.existe(casesAccessibles.caissesAccessibles[i].y + 1,
+            casesAccessibles.caissesAccessibles[i].x) != -1) {
+          if (niveau.estOccupable(casesAccessibles.caissesAccessibles[i].y - 1,
+              casesAccessibles.caissesAccessibles[i].x)) {
+            mouvementsPossibles[nb_mouvements][0] = new Point(casesAccessibles.caissesAccessibles[i].x,
+                casesAccessibles.caissesAccessibles[i].y + 1);
+            mouvementsPossibles[nb_mouvements][1] = new Point(casesAccessibles.caissesAccessibles[i].x,
+                casesAccessibles.caissesAccessibles[i].y);
             nb_mouvements++;
           }
         }
         // Pareil pour la droite
-        if (casesAccessibles.existe(caissesAccessibles[i].y, caissesAccessibles[i].x - 1) != -1) {
-          if (niveau.estOccupable(caissesAccessibles[i].y, caissesAccessibles[i].x + 1)) {
-            mouvementsPossibles[nb_mouvements][0] = new Point(caissesAccessibles[i].x - 1, caissesAccessibles[i].y);
-            mouvementsPossibles[nb_mouvements][1] = new Point(caissesAccessibles[i].x, caissesAccessibles[i].y);
+        if (casesAccessibles.existe(casesAccessibles.caissesAccessibles[i].y,
+            casesAccessibles.caissesAccessibles[i].x - 1) != -1) {
+          if (niveau.estOccupable(casesAccessibles.caissesAccessibles[i].y,
+              casesAccessibles.caissesAccessibles[i].x + 1)) {
+            mouvementsPossibles[nb_mouvements][0] = new Point(casesAccessibles.caissesAccessibles[i].x - 1,
+                casesAccessibles.caissesAccessibles[i].y);
+            mouvementsPossibles[nb_mouvements][1] = new Point(casesAccessibles.caissesAccessibles[i].x,
+                casesAccessibles.caissesAccessibles[i].y);
             nb_mouvements++;
           }
         }
         // Pareil pour la gauche
-        if (casesAccessibles.existe(caissesAccessibles[i].y, caissesAccessibles[i].x + 1) != -1) {
-          if (niveau.estOccupable(caissesAccessibles[i].y, caissesAccessibles[i].x - 1)) {
-            mouvementsPossibles[nb_mouvements][0] = new Point(caissesAccessibles[i].x + 1, caissesAccessibles[i].y);
-            mouvementsPossibles[nb_mouvements][1] = new Point(caissesAccessibles[i].x, caissesAccessibles[i].y);
+        if (casesAccessibles.existe(casesAccessibles.caissesAccessibles[i].y,
+            casesAccessibles.caissesAccessibles[i].x + 1) != -1) {
+          if (niveau.estOccupable(casesAccessibles.caissesAccessibles[i].y,
+              casesAccessibles.caissesAccessibles[i].x - 1)) {
+            mouvementsPossibles[nb_mouvements][0] = new Point(casesAccessibles.caissesAccessibles[i].x + 1,
+                casesAccessibles.caissesAccessibles[i].y);
+            mouvementsPossibles[nb_mouvements][1] = new Point(casesAccessibles.caissesAccessibles[i].x,
+                casesAccessibles.caissesAccessibles[i].y);
             nb_mouvements++;
           }
         }
@@ -70,6 +153,8 @@ class IASolver extends IA {
 
   // Cases accessibles par le pousseur
   class CasesAccessibles {
+    // Toutes les caisses accessibles à l'instant t
+    Point[] caissesAccessibles;
     Point[] position;
     int taille, nb_eleme;
 
@@ -77,6 +162,7 @@ class IASolver extends IA {
       taille = niveau.lignes() * niveau.colonnes();
       nb_eleme = 1;
       ajouterCasesAccessibles(x, y);
+      caissesAccessibles = new Point[niveau.nbButs];
     }
 
     private void checkAndAddPosition(int y, int x) {
@@ -177,21 +263,24 @@ class IASolver extends IA {
     Sequence<Coup> resultat = Configuration.nouvelleSequence();
 
     if (cases == null) {
-      caissesAccessibles = new Point[niveau.nbButs];
+      // caissesAccessibles = new Point[niveau.nbButs];
       cases = new CasesAccessibles(niveau.colonnePousseur(), niveau.lignePousseur());
       CaissesDeplacables caissesAccessiblesTemporaire = new CaissesDeplacables();
       caissesAccessiblesTemporaire.trouverMouvementsCaisses(cases);
-      System.out.println("Nombre de mouvements : " + caissesAccessiblesTemporaire.nb_mouvements);
-      // Affiche tout le tableau
-      for (int i = 0; i < nb_caisses; i++) {
-        System.out.println("Caisse " + i + " : " + caissesAccessibles[i].x + " " + caissesAccessibles[i].y);
-      }
-      for (int i = 0; i < caissesAccessiblesTemporaire.nb_mouvements; i++) {
-        System.out.println("Mouvement " + i + " : " + caissesAccessiblesTemporaire.mouvementsPossibles[i][0].x + " "
-            + caissesAccessiblesTemporaire.mouvementsPossibles[i][0].y + " | "
-            + caissesAccessiblesTemporaire.mouvementsPossibles[i][1].x
-            + " " + caissesAccessiblesTemporaire.mouvementsPossibles[i][1].y);
-      }
+      // System.out.println("Nombre de mouvements : " +
+      // caissesAccessiblesTemporaire.nb_mouvements);
+      // // Affiche tout le tableau
+      // for (int i = 0; i < nb_caisses; i++) {
+      // System.out.println("Caisse " + i + " : " + caissesAccessibles[i].x + " " +
+      // caissesAccessibles[i].y);
+      // }
+      // for (int i = 0; i < caissesAccessiblesTemporaire.nb_mouvements; i++) {
+      // System.out.println("Mouvement " + i + " : " +
+      // caissesAccessiblesTemporaire.mouvementsPossibles[i][0].x + " "
+      // + caissesAccessiblesTemporaire.mouvementsPossibles[i][0].y + " | "
+      // + caissesAccessiblesTemporaire.mouvementsPossibles[i][1].x
+      // + " " + caissesAccessiblesTemporaire.mouvementsPossibles[i][1].y);
+      // }
     }
     for (int i = 0; i < cases.nb_eleme - 1; i++) {
       Coup coup = new Coup();
