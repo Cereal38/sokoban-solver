@@ -78,8 +78,8 @@ class IASolver extends IA {
         etatSuivant.cases[caisses.mouvementsPossibles[i][1].y + mouvementY][caisses.mouvementsPossibles[i][1].x
             + mouvementX] = Niveau.CAISSE;
 
-        // trouverSolutionsRec(etatSuivant, nouvellePositionJoueurL,
-        // nouvellePositionJoueurC);
+        trouverSolutionsRec(etatSuivant, nouvellePositionJoueurL,
+            nouvellePositionJoueurC);
       }
 
       return null;
