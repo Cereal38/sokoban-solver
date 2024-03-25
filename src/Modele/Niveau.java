@@ -22,6 +22,24 @@ public class Niveau implements Cloneable {
     pousseurL = pousseurC = -1;
   }
 
+  public void affiche() {
+    for (int i = 0; i < l; i++) {
+      for (int j = 0; j < c; j++) {
+        if (aMur(i, j))
+          System.out.print("#");
+        else if (aPousseur(i, j))
+          System.out.print("@");
+        else if (aCaisse(i, j))
+          System.out.print("$");
+        else if (aBut(i, j))
+          System.out.print(".");
+        else
+          System.out.print(" ");
+      }
+      System.out.println();
+    }
+  }
+
   int ajuste(int cap, int objectif) {
     while (cap <= objectif) {
       cap = cap * 2;
