@@ -5,7 +5,6 @@
 package Modele;
 
 import java.awt.Point;
-import java.util.PriorityQueue;
 
 import Global.Configuration;
 import Structures.Sequence;
@@ -32,12 +31,31 @@ class IASolver extends IA {
   }
 
   class Solution {
-    PriorityQueue<EtatDuNiveau> etats;
+    EtatDuNiveau[] etats;
     Niveau niveauSansCaisse;
+    int index = 0;
 
     Solution() {
-      etats = new PriorityQueue<EtatDuNiveau>();
+      etats = new EtatDuNiveau[1000];
       niveauSansCaisse = copieNiveauSansCaisse(niveau);
+      index = 0;
+      // Ajoute l'état initial
+      ajouteEtat(new EtatDuNiveau(niveau.lignePousseur(), niveau.colonnePousseur(), positionCaisses(niveau), -1));
+    }
+
+    private int[][] positionCaisses(Niveau niveau) {
+      int index_caisse = 0;
+      int[][] posCaisses = new int[niveau.nbButs][2];
+      for (int i = 0; i < niveau.lignes(); i++) {
+        for (int j = 0; j < niveau.colonnes(); j++) {
+          if (niveau.aCaisse(i, j)) {
+            posCaisses[index_caisse][0] = i;
+            posCaisses[index_caisse][1] = j;
+            index_caisse++;
+          }
+        }
+      }
+      return posCaisses;
     }
 
     private Niveau copieNiveauSansCaisse(Niveau niveauAvecCaisses) {
@@ -53,23 +71,68 @@ class IASolver extends IA {
       return niveauSansCaisse;
     }
 
+    private Niveau copieNiveauAvecCaisse(Niveau niveauSansCaisse, int[][] posCaisses) {
+      Niveau niveauAvecCaisse = niveauSansCaisse.clone();
+      // Parcours tout le niveau et remplace les cases vides par des caisses
+      for (int i = 0; i < posCaisses.length; i++) {
+        niveauAvecCaisse.cases[posCaisses[i][0]][posCaisses[i][1]] = Niveau.CAISSE;
+      }
+      return niveauAvecCaisse;
+    }
+
     private void ajouteEtat(EtatDuNiveau etat) {
-      etats.add(etat);
+      etats[index] = etat;
+      index++;
     }
 
     public void resoudre() {
-      // Tant qu'une solution n'a pas été trouvé et que toute la liste n'a pas été
-      // exploré
-
+      // Tant qu'il reste des élements dans la liste
+      while (etats[index] != null) {
+        // On récupère l'état de l'indice actuel
+        EtatDuNiveau etatCourant = etats[index];
+        // On récupère les infos
+        int posL = etatCourant.posL;
+        int posC = etatCourant.posC;
+        int[][] posCaisses = etatCourant.posCaisses;
+        int pere = etatCourant.pere;
+        // On récupère le niveau actuel
+        Niveau niveauCourant = copieNiveauAvecCaisse(niveauSansCaisse, posCaisses);
+        // On récupère les cases accessibles
+        CasesAccessibles cases = new CasesAccessibles(niveauCourant, posL, posC);
+        // On récupère les mouvements possibles
+        CaissesDeplacables caisses = new CaissesDeplacables();
+        caisses.trouverMouvementsCaisses(niveauCourant, cases);
+        // On ajoute tout les mouvements de caisse possibles au tableau
+        for (int i = 0; i < caisses.nb_mouvements; i++) {
+          // On récupère les infos du mouvement
+          Point posCaisse = caisses.mouvementsPossibles[i][1];
+          Point posPousseur = caisses.mouvementsPossibles[i][0];
+          // On crée un nouveau tableau de caisses
+          int[][] posCaissesNouveau = new int[posCaisses.length][2];
+          for (int j = 0; j < posCaisses.length; j++) {
+            posCaissesNouveau[j][0] = posCaisses[j][0];
+            posCaissesNouveau[j][1] = posCaisses[j][1];
+          }
+          // On met à jour la position de la caisse
+          for (int j = 0; j < posCaissesNouveau.length; j++) {
+            if (posCaissesNouveau[j][0] == posCaisse.y && posCaissesNouveau[j][1] == posCaisse.x) {
+              posCaissesNouveau[j][0] = posPousseur.y;
+              posCaissesNouveau[j][1] = posPousseur.x;
+            }
+          }
+          // On ajoute l'état
+          ajouteEtat(new EtatDuNiveau(posPousseur.y, posPousseur.x, posCaissesNouveau, index));
+        }
+      }
     }
   }
 
   class CaissesDeplacables {
-    Point[][] mouvementsPossibles;
+    Point[][] mouvementsPossibles; // Position du joueur requise pour déplacer la caisse, position de la caisse
     int nb_mouvements = 0;
 
     // [ [(2,3), (2, 4)], [(6, 7), (5, 7)] ]
-    public void trouverMouvementsCaisses(CasesAccessibles casesAccessibles) {
+    public void trouverMouvementsCaisses(Niveau niveau, CasesAccessibles casesAccessibles) {
       // On reset les infos
       nb_mouvements = 0;
       mouvementsPossibles = new Point[niveau.nbButs * 4][2];
@@ -136,14 +199,14 @@ class IASolver extends IA {
     Point[] position;
     int taille, nb_eleme;
 
-    public CasesAccessibles(int x, int y) {
+    public CasesAccessibles(Niveau niveau, int x, int y) {
       taille = niveau.lignes() * niveau.colonnes();
       nb_eleme = 1;
-      ajouterCasesAccessibles(x, y);
+      ajouterCasesAccessibles(niveau, x, y);
       caissesAccessibles = new Point[niveau.nbButs];
     }
 
-    private void checkAndAddPosition(int y, int x) {
+    private void checkAndAddPosition(Niveau niveau, int y, int x) {
       if (existe(y, x) == -1) {
         // On met à jour les cases accessibles par le joueur
         if (niveau.estOccupable(y, x)) {
@@ -163,7 +226,7 @@ class IASolver extends IA {
       }
     }
 
-    public void ajouterCasesAccessibles(int x, int y) {
+    public void ajouterCasesAccessibles(Niveau niveau, int x, int y) {
       // On clear le tableau
       position = new Point[taille];
       // On ajoute la position du pousseur
@@ -181,10 +244,10 @@ class IASolver extends IA {
         // On regarde chaque case adjacente si elle n'est pas déjà dans le tableau et si
         // elle est
         // accessible, si oui on l'ajoute
-        checkAndAddPosition(position[i].y - 1, position[i].x);
-        checkAndAddPosition(position[i].y + 1, position[i].x);
-        checkAndAddPosition(position[i].y, position[i].x - 1);
-        checkAndAddPosition(position[i].y, position[i].x + 1);
+        checkAndAddPosition(niveau, position[i].y - 1, position[i].x);
+        checkAndAddPosition(niveau, position[i].y + 1, position[i].x);
+        checkAndAddPosition(niveau, position[i].y, position[i].x - 1);
+        checkAndAddPosition(niveau, position[i].y, position[i].x + 1);
 
         i++;
       }
@@ -242,8 +305,7 @@ class IASolver extends IA {
 
     // On test si Solution retire bien les caisses
     Solution solution = new Solution();
-    System.out.println("Niveau sans caisses : ");
-    solution.niveauSansCaisse.affiche();
+    solution.resoudre();
 
     // for (int i = 0; i < cases.nb_eleme - 1; i++) {
     // Coup coup = new Coup();
