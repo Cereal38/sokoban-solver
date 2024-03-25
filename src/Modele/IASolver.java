@@ -96,8 +96,6 @@ class IASolver extends IA {
         int pere = etatCourant.pere;
         // On récupère le niveau actuel
         Niveau niveauCourant = copieNiveauAvecCaisse(niveauSansCaisse, posCaisses);
-        // TODO: Remove print
-        niveauCourant.affiche();
         // On récupère les cases accessibles
         CasesAccessibles cases = new CasesAccessibles(niveauCourant, posL, posC);
         // On récupère les mouvements possibles
@@ -203,40 +201,41 @@ class IASolver extends IA {
     Point[] position;
     int taille, nb_eleme;
 
-    public CasesAccessibles(Niveau niveauInner, int x, int y) {
+    public CasesAccessibles(Niveau niveauInner, int l, int c) {
       taille = niveauInner.lignes() * niveauInner.colonnes();
       nb_eleme = 1;
-      ajouterCasesAccessibles(niveauInner, x, y);
+      ajouterCasesAccessibles(niveauInner, l, c);
       caissesAccessibles = new Point[niveauInner.nbButs];
     }
 
-    private void checkAndAddPosition(Niveau niveauInner, int y, int x) {
-      if (existe(y, x) == -1) {
+    private void checkAndAddPosition(Niveau niveauInner, int l, int c) {
+      if (existe(l, c) == -1) {
         // TODO: Remove print
-        System.out.println("CheckAndAddPosition: " + y + " " + x);
+        System.out.println("Ligne: " + l + " | Colonne: " + c);
         // On met à jour les cases accessibles par le joueur
-        if (niveauInner.estOccupable(y, x)) {
-          position[nb_eleme] = new Point(x, y);
+        if (niveauInner.estOccupable(l, c)) {
+          position[nb_eleme] = new Point(c, l);
           nb_eleme++;
           // On met à jour les caisses accessibles par le joueur
         } else {
-          if (niveauInner.aCaisse(y, x)) {
+          if (niveauInner.aCaisse(l, c)) {
             for (int i = 0; i < nb_caisses; i++) {
-              if (caissesAccessibles[i].x == x && caissesAccessibles[i].y == y)
+              if (caissesAccessibles[i].x == c && caissesAccessibles[i].y == l)
                 return;
             }
-            caissesAccessibles[nb_caisses] = new Point(x, y);
+            System.out.println("Caisse: " + l + " " + c);
+            caissesAccessibles[nb_caisses] = new Point(c, l);
             nb_caisses++;
           }
         }
       }
     }
 
-    public void ajouterCasesAccessibles(Niveau niveauInner, int x, int y) {
+    public void ajouterCasesAccessibles(Niveau niveauInner, int l, int c) {
       // On clear le tableau
       position = new Point[taille];
       // On ajoute la position du pousseur
-      position[0] = new Point(x, y);
+      position[0] = new Point(c, l);
       nb_eleme = 1;
       int i = 0;
       while (i < nb_eleme) {
