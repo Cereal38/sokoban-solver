@@ -5,84 +5,62 @@
 package Modele;
 
 import java.awt.Point;
+import java.util.PriorityQueue;
 
 import Global.Configuration;
 import Structures.Sequence;
-import Structures.SequenceListe;
 
 class IASolver extends IA {
   // Couleurs au format RGB (rouge, vert, bleu, un octet par couleur)
   final static int VERT = 0x00CC00;
   final static int MARRON = 0xBB7755;
-  CasesAccessibles cases = null;
-  CaissesDeplacables caisses = null;
 
   int nb_caisses = 0;
 
   class EtatDuNiveau {
-    CaissesDeplacables caisses;
-    CasesAccessibles cases;
-    int joueurC;
-    int joueurL;
+    int posL; // Position du pousseur en ligne
+    int posC; // Position du pousseur en colonne
+    int[][] posCaisses; // Position des caisses
+    int pere; // Indice du père dans la liste des états
 
-    void EtatDuNiveau(CasesAccessibles ca, CaissesDeplacables cd, int jC, int jL) {
-      cases = ca;
-      caisses = cd;
-      joueurC = jC;
-      joueurL = jL;
+    EtatDuNiveau(int posL, int posC, int[][] posCaisses, int pere) {
+      this.posL = posL;
+      this.posC = posC;
+      this.posCaisses = posCaisses;
+      this.pere = pere;
     }
   }
 
-  class Solutions {
-    // 1 Solution = 1 tableau de tuples correspondant aux mouvements de caisses
-    // (Position pousseur, Position caisse)
-    // Solutions = tableau de solutions
-    SequenceListe<EtatDuNiveau>[] solutions;
-    // Enchainement de déplacement de caisses
+  class Solution {
+    PriorityQueue<EtatDuNiveau> etats;
+    Niveau niveauSansCaisse;
 
-    public void trouverSolutions() {
-      SequenceListe<EtatDuNiveau> deplacements = new SequenceListe();
-      // solutions = trouverSolutionsRec(niveau, niveau.pousseurL, niveau.pousseurC,
-      // deplacements);
+    Solution() {
+      etats = new PriorityQueue<EtatDuNiveau>();
+      niveauSansCaisse = copieNiveauSansCaisse(niveau);
     }
 
-    // Prend l'état actuel
-    private EtatDuNiveau[] trouverSolutionsRec(Niveau etatDuNiveau, int joueurL, int joueurC,
-        SequenceListe<EtatDuNiveau> anciennesPositions) {
-
-      // Cas de base
-      if (etatDuNiveau.estTermine()) {
-        return null;
+    private Niveau copieNiveauSansCaisse(Niveau niveauAvecCaisses) {
+      Niveau niveauSansCaisse = niveau.clone();
+      // Parcours tout le niveau et remplace les caisses par des cases vides
+      for (int i = 0; i < niveauAvecCaisses.lignes(); i++) {
+        for (int j = 0; j < niveauAvecCaisses.colonnes(); j++) {
+          if (niveauAvecCaisses.aCaisse(i, j)) {
+            niveauSansCaisse.cases[i][j] = Niveau.VIDE;
+          }
+        }
       }
+      return niveauSansCaisse;
+    }
 
-      CasesAccessibles cases = new CasesAccessibles(etatDuNiveau.colonnePousseur(), etatDuNiveau.lignePousseur());
-      CaissesDeplacables caisses = new CaissesDeplacables();
-      caisses.trouverMouvementsCaisses(cases);
+    private void ajouteEtat(EtatDuNiveau etat) {
+      etats.add(etat);
+    }
 
-      for (int i = 0; i < caisses.nb_mouvements; i++) {
-        Niveau etatSuivant = etatDuNiveau.clone();
-        // L'ancienne position du joueur devient vide
-        etatSuivant.cases[joueurL][joueurC] = Niveau.VIDE;
-        // L'ancienne position de la caisse devient la position du joueur
-        int nouvellePositionJoueurC = caisses.mouvementsPossibles[i][0].x;
-        int nouvellePositionJoueurL = caisses.mouvementsPossibles[i][0].y;
-        etatSuivant.cases[nouvellePositionJoueurL][nouvellePositionJoueurC] = Niveau.POUSSEUR;
-        // pousseur.x - caisse.x
-        // gauche = 1 , droite = -1
-        // pousseur.y - caisse.y
-        // bas = -1, haut = 1
-        // si le res != 0 alors caisse + res
-        // On calcul la nouvelle position de la caisse
-        int mouvementX = (caisses.mouvementsPossibles[i][0].x - caisses.mouvementsPossibles[i][1].x) * -1;
-        int mouvementY = (caisses.mouvementsPossibles[i][0].y - caisses.mouvementsPossibles[i][1].y) * -1;
-        etatSuivant.cases[caisses.mouvementsPossibles[i][1].y + mouvementY][caisses.mouvementsPossibles[i][1].x
-            + mouvementX] = Niveau.CAISSE;
+    public void resoudre() {
+      // Tant qu'une solution n'a pas été trouvé et que toute la liste n'a pas été
+      // exploré
 
-        trouverSolutionsRec(etatSuivant, nouvellePositionJoueurL,
-            nouvellePositionJoueurC);
-      }
-
-      return null;
     }
   }
 
@@ -262,40 +240,28 @@ class IASolver extends IA {
   public Sequence<Coup> joue() {
     Sequence<Coup> resultat = Configuration.nouvelleSequence();
 
-    if (cases == null) {
-      // caissesAccessibles = new Point[niveau.nbButs];
-      cases = new CasesAccessibles(niveau.colonnePousseur(), niveau.lignePousseur());
-      CaissesDeplacables caissesAccessiblesTemporaire = new CaissesDeplacables();
-      caissesAccessiblesTemporaire.trouverMouvementsCaisses(cases);
-      // System.out.println("Nombre de mouvements : " +
-      // caissesAccessiblesTemporaire.nb_mouvements);
-      // // Affiche tout le tableau
-      // for (int i = 0; i < nb_caisses; i++) {
-      // System.out.println("Caisse " + i + " : " + caissesAccessibles[i].x + " " +
-      // caissesAccessibles[i].y);
-      // }
-      // for (int i = 0; i < caissesAccessiblesTemporaire.nb_mouvements; i++) {
-      // System.out.println("Mouvement " + i + " : " +
-      // caissesAccessiblesTemporaire.mouvementsPossibles[i][0].x + " "
-      // + caissesAccessiblesTemporaire.mouvementsPossibles[i][0].y + " | "
-      // + caissesAccessiblesTemporaire.mouvementsPossibles[i][1].x
-      // + " " + caissesAccessiblesTemporaire.mouvementsPossibles[i][1].y);
-      // }
-    }
-    for (int i = 0; i < cases.nb_eleme - 1; i++) {
-      Coup coup = new Coup();
-      coup.deplacementPousseur(cases.position[i].y, cases.position[i].x, cases.position[i + 1].y,
-          cases.position[i + 1].x);
-      System.out.println("Position " + i + " : " + cases.position[i].y + " " + cases.position[i].x);
-      // coup = niveau.deplace(cases.position[i].y - cases.position[i + 1].y,
-      // cases.position[i].x - cases.position[i + 1].x);
-      resultat.insereQueue(coup);
-    }
-    Coup coup = new Coup();
-    coup.deplacementPousseur(cases.position[cases.nb_eleme - 1].y, cases.position[cases.nb_eleme - 1].x,
-        cases.position[0].y,
-        cases.position[0].x);
-    resultat.insereQueue(coup);
+    // On test si Solution retire bien les caisses
+    Solution solution = new Solution();
+    System.out.println("Niveau sans caisses : ");
+    solution.niveauSansCaisse.affiche();
+
+    // for (int i = 0; i < cases.nb_eleme - 1; i++) {
+    // Coup coup = new Coup();
+    // coup.deplacementPousseur(cases.position[i].y, cases.position[i].x,
+    // cases.position[i + 1].y,
+    // cases.position[i + 1].x);
+    // System.out.println("Position " + i + " : " + cases.position[i].y + " " +
+    // cases.position[i].x);
+    // // coup = niveau.deplace(cases.position[i].y - cases.position[i + 1].y,
+    // // cases.position[i].x - cases.position[i + 1].x);
+    // resultat.insereQueue(coup);
+    // }
+    // Coup coup = new Coup();
+    // coup.deplacementPousseur(cases.position[cases.nb_eleme - 1].y,
+    // cases.position[cases.nb_eleme - 1].x,
+    // cases.position[0].y,
+    // cases.position[0].x);
+    // resultat.insereQueue(coup);
     return resultat;
   }
 }
