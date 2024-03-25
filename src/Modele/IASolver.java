@@ -82,7 +82,6 @@ class IASolver extends IA {
 
     private void ajouteEtat(EtatDuNiveau etat) {
       etats[index] = etat;
-      index++;
     }
 
     public void resoudre() {
@@ -123,6 +122,7 @@ class IASolver extends IA {
           // On ajoute l'état
           ajouteEtat(new EtatDuNiveau(posPousseur.y, posPousseur.x, posCaissesNouveau, index));
         }
+        index++;
       }
     }
   }
