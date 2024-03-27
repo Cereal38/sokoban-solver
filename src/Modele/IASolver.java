@@ -21,6 +21,7 @@ class IASolver extends IA {
     int posC; // Position du pousseur en colonne
     int[][] posCaisses; // Position des caisses
     int pere; // Indice du père dans la liste des états
+    int nbCaissesAccessibles = 0;
 
     EtatDuNiveau(int posL, int posC, int[][] posCaisses, int pere) {
       this.posL = posL;
@@ -204,8 +205,8 @@ class IASolver extends IA {
     public CasesAccessibles(Niveau niveauInner, int l, int c) {
       taille = niveauInner.lignes() * niveauInner.colonnes();
       nb_eleme = 1;
-      ajouterCasesAccessibles(niveauInner, l, c);
       caissesAccessibles = new Point[niveauInner.nbButs];
+      ajouterCasesAccessibles(niveauInner, l, c);
     }
 
     private void checkAndAddPosition(Niveau niveauInner, int l, int c) {
