@@ -276,12 +276,6 @@ class IASolver extends IA {
       }
       // On construit le bon chemin
       extraireChemin();
-
-      // On affiche le chemin
-      for (int i = 0; i < mouvements.length; i++) {
-        System.out.println("Position " + i + " : " + mouvements[i].posL + " " + mouvements[i].posC + " | Mouvement "
-            + mouvements[i].mouvementL + " " + mouvements[i].mouvementC);
-      }
     }
 
   }
@@ -466,6 +460,30 @@ class IASolver extends IA {
     // On test si Solution retire bien les caisses
     Solution solution = new Solution();
     solution.resoudre();
+
+    // On se déplace de la position joueur à la position devant caisse
+    // Ensuite on fait le déplacement de la caisse
+    // On récupère la nouvelle position
+    // Retour au début de boucle
+    MouvementJoueur[] mouvements = solution.mouvements;
+    // On récupère les pos de base du joueur
+    int joueurL = niveau.lignePousseur();
+    int joueurC = niveau.colonnePousseur();
+    // On effectue les mouvements
+    for (int i = 0; i < mouvements.length; i++) {
+      Coup coup = new Coup();
+      System.out.println("Joueur : " + joueurL + " " + joueurC + " | Mouvement "
+          + mouvements[i].mouvementL + " " + mouvements[i].mouvementC);
+      System.out.println("Position " + i + " : " + mouvements[i].posL + " " + mouvements[i].posC + " | Mouvement "
+          + mouvements[i].mouvementL + " " + mouvements[i].mouvementC);
+      coup.deplacementPousseur(joueurL, joueurC, mouvements[i].posL - mouvements[i].mouvementL,
+          mouvements[i].posC - mouvements[i].mouvementC);
+      resultat.insereQueue(coup);
+      coup = niveau.deplace(mouvements[i].mouvementL, mouvements[i].mouvementC);
+      resultat.insereQueue(coup);
+      joueurC = solution.mouvements[i].posC;
+      joueurL = solution.mouvements[i].posL;
+    }
 
     // for (int i = 0; i < cases.nb_eleme - 1; i++) {
     // Coup coup = new Coup();
