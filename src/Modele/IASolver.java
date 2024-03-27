@@ -30,15 +30,34 @@ class IASolver extends IA {
 
   class Solution {
     EtatDuNiveau[] etats;
+    int[][] posButs;
     Niveau niveauSansCaisse;
     int index = 0;
 
     Solution() {
-      etats = new EtatDuNiveau[1000];
+      // Ajoute la position des buts
+      posButs = positionsButs(niveau);
+      etats = new EtatDuNiveau[100000];
       niveauSansCaisse = copieNiveauSansCaisseSansJoueur(niveau);
       index = 0;
       // Ajoute l'état initial
       ajouteEtat(new EtatDuNiveau(niveau.lignePousseur(), niveau.colonnePousseur(), positionCaisses(niveau), -1));
+    }
+
+    private int[][] positionsButs(Niveau niveau) {
+      int index_buts = 0;
+      int[][] posButs = new int[niveau.nbButs][2];
+      for (int i = 0; i < niveau.lignes(); i++) {
+        for (int j = 0; j < niveau.colonnes(); j++) {
+          if (niveau.aBut(i, j)) {
+            posButs[index_buts][0] = i;
+            posButs[index_buts][1] = j;
+            index_buts++;
+          }
+        }
+      }
+
+      return posButs;
     }
 
     private int[][] positionCaisses(Niveau niveau) {
@@ -54,6 +73,18 @@ class IASolver extends IA {
         }
       }
       return posCaisses;
+    }
+
+    private boolean niveauTerminee(int[][] positionsCaisses) {
+      int nb_but = 0;
+      for (int i = 0; i < positionsCaisses.length; i++) {
+        for (int j = 0; j < posButs.length; j++) {
+          if (positionsCaisses[i][0] == posButs[j][0] && positionsCaisses[i][1] == posButs[j][1]) {
+            nb_but++;
+          }
+        }
+      }
+      return nb_but == posButs.length;
     }
 
     private Niveau copieNiveauSansCaisseSansJoueur(Niveau niveauAvecCaissesAvecJoueur) {
@@ -124,6 +155,7 @@ class IASolver extends IA {
         // On récupère les mouvements possibles
         CaissesDeplacables caisses = new CaissesDeplacables(cases.nbCaissesDeplacables);
         caisses.trouverMouvementsCaisses(niveauCourant, cases);
+        System.out.println("Etat " + index_temp);
         niveauCourant.affiche();
         // On ajoute tout les mouvements de caisse possibles au tableau
         for (int i = 0; i < caisses.nb_mouvements; i++) {
@@ -144,6 +176,11 @@ class IASolver extends IA {
           }
           // On ajoute l'état
           ajouteEtat(new EtatDuNiveau(posLNew, posCNew, posCaissesNew, index_temp));
+          // On vérifie si le niveau est terminé
+          if (niveauTerminee(posCaissesNew)) {
+            System.out.println("Niveau terminé");
+            break;
+          }
         }
         index_temp++;
       }
