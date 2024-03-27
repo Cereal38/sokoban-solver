@@ -160,6 +160,11 @@ class IASolver extends IA {
         // On ajoute tout les mouvements de caisse possibles au tableau
         for (int i = 0; i < caisses.nb_mouvements; i++) {
           // On récupère la nouvelle position du joueur (position actuelle de la caisse)
+          // Affiche mouvements possibles
+          System.out.println("Position joueur: " + caisses.mouvementsPossibles[i][0].y + "."
+              + caisses.mouvementsPossibles[i][0].x + " | Position caisse: " + caisses.mouvementsPossibles[i][1].y + "."
+              + caisses.mouvementsPossibles[i][1].x + " | Position future caisse: "
+              + caisses.mouvementsPossibles[i][2].y + "." + caisses.mouvementsPossibles[i][2].x);
           int posLNew = caisses.mouvementsPossibles[i][1].y;
           int posCNew = caisses.mouvementsPossibles[i][1].x;
           // On récupère la nouvelle position de la caisse
@@ -208,58 +213,49 @@ class IASolver extends IA {
         // Si la case est accessible, on regarde si la case à l'opposée est libre (ou un
         // but)
         // Si vrai on ajoute le mouvement
-        if (casesAccessibles.existe(casesAccessibles.caissesAccessibles[i].y - 1,
-            casesAccessibles.caissesAccessibles[i].x) != -1) {
-          if (niveau.estOccupable(casesAccessibles.caissesAccessibles[i].y + 1,
-              casesAccessibles.caissesAccessibles[i].x)) {
-            mouvementsPossibles[nb_mouvements][0] = new Point(casesAccessibles.caissesAccessibles[i].x,
-                casesAccessibles.caissesAccessibles[i].y - 1);
-            mouvementsPossibles[nb_mouvements][1] = new Point(casesAccessibles.caissesAccessibles[i].x,
-                casesAccessibles.caissesAccessibles[i].y);
-            mouvementsPossibles[nb_mouvements][2] = new Point(casesAccessibles.caissesAccessibles[i].x,
-                casesAccessibles.caissesAccessibles[i].y + 1);
+        int caisseX = casesAccessibles.caissesAccessibles[i].x;
+        int caisseY = casesAccessibles.caissesAccessibles[i].y;
+        if (casesAccessibles.existe(caisseY - 1, caisseX) != -1) {
+          if (niveau.estOccupable(caisseY + 1, caisseX)) {
+            // Poisition du joueur requise pour déplacer la caisse
+            mouvementsPossibles[nb_mouvements][0] = new Point(caisseX, caisseY - 1);
+            // Position de la caisse
+            mouvementsPossibles[nb_mouvements][1] = new Point(caisseX, caisseY);
+            // Future position de la caisse
+            mouvementsPossibles[nb_mouvements][2] = new Point(caisseX, caisseY + 1);
             nb_mouvements++;
           }
         }
         // Pareil pour le bas
-        if (casesAccessibles.existe(casesAccessibles.caissesAccessibles[i].y + 1,
-            casesAccessibles.caissesAccessibles[i].x) != -1) {
-          if (niveau.estOccupable(casesAccessibles.caissesAccessibles[i].y - 1,
-              casesAccessibles.caissesAccessibles[i].x)) {
-            mouvementsPossibles[nb_mouvements][0] = new Point(casesAccessibles.caissesAccessibles[i].x,
-                casesAccessibles.caissesAccessibles[i].y + 1);
-            mouvementsPossibles[nb_mouvements][1] = new Point(casesAccessibles.caissesAccessibles[i].x,
-                casesAccessibles.caissesAccessibles[i].y);
-            mouvementsPossibles[nb_mouvements][2] = new Point(casesAccessibles.caissesAccessibles[i].x,
-                casesAccessibles.caissesAccessibles[i].y - 1);
+        if (casesAccessibles.existe(caisseY + 1,
+            caisseX) != -1) {
+          if (niveau.estOccupable(caisseY - 1,
+              caisseX)) {
+            mouvementsPossibles[nb_mouvements][0] = new Point(caisseX, caisseY + 1);
+            mouvementsPossibles[nb_mouvements][1] = new Point(caisseX, caisseY);
+            mouvementsPossibles[nb_mouvements][2] = new Point(caisseX, caisseY - 1);
             nb_mouvements++;
           }
         }
         // Pareil pour la droite
-        if (casesAccessibles.existe(casesAccessibles.caissesAccessibles[i].y,
-            casesAccessibles.caissesAccessibles[i].x - 1) != -1) {
-          if (niveau.estOccupable(casesAccessibles.caissesAccessibles[i].y,
-              casesAccessibles.caissesAccessibles[i].x + 1)) {
-            mouvementsPossibles[nb_mouvements][0] = new Point(casesAccessibles.caissesAccessibles[i].x - 1,
-                casesAccessibles.caissesAccessibles[i].y);
-            mouvementsPossibles[nb_mouvements][1] = new Point(casesAccessibles.caissesAccessibles[i].x,
-                casesAccessibles.caissesAccessibles[i].y);
-            mouvementsPossibles[nb_mouvements][1] = new Point(casesAccessibles.caissesAccessibles[i].x + 1,
-                casesAccessibles.caissesAccessibles[i].y);
+        if (casesAccessibles.existe(caisseY,
+            caisseX - 1) != -1) {
+          if (niveau.estOccupable(caisseY,
+              caisseX + 1)) {
+            mouvementsPossibles[nb_mouvements][0] = new Point(caisseX - 1, caisseY);
+            mouvementsPossibles[nb_mouvements][1] = new Point(caisseX, caisseY);
+            mouvementsPossibles[nb_mouvements][2] = new Point(caisseX + 1, caisseY);
             nb_mouvements++;
           }
         }
         // Pareil pour la gauche
-        if (casesAccessibles.existe(casesAccessibles.caissesAccessibles[i].y,
-            casesAccessibles.caissesAccessibles[i].x + 1) != -1) {
-          if (niveau.estOccupable(casesAccessibles.caissesAccessibles[i].y,
-              casesAccessibles.caissesAccessibles[i].x - 1)) {
-            mouvementsPossibles[nb_mouvements][0] = new Point(casesAccessibles.caissesAccessibles[i].x + 1,
-                casesAccessibles.caissesAccessibles[i].y);
-            mouvementsPossibles[nb_mouvements][1] = new Point(casesAccessibles.caissesAccessibles[i].x,
-                casesAccessibles.caissesAccessibles[i].y);
-            mouvementsPossibles[nb_mouvements][2] = new Point(casesAccessibles.caissesAccessibles[i].x - 1,
-                casesAccessibles.caissesAccessibles[i].y);
+        if (casesAccessibles.existe(caisseY,
+            caisseX + 1) != -1) {
+          if (niveau.estOccupable(caisseY,
+              caisseX - 1)) {
+            mouvementsPossibles[nb_mouvements][0] = new Point(caisseX + 1, caisseY);
+            mouvementsPossibles[nb_mouvements][1] = new Point(caisseX, caisseY);
+            mouvementsPossibles[nb_mouvements][2] = new Point(caisseX - 1, caisseY);
             nb_mouvements++;
           }
         }
