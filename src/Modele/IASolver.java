@@ -15,21 +15,41 @@ class IASolver extends IA {
   final static int MARRON = 0xBB7755;
 
   class EtatDuNiveau {
-    int posL; // Position du pousseur en ligne
-    int posC; // Position du pousseur en colonne
+    int posLNvl; // Position du pousseur en ligne
+    int posCNvl; // Position du pousseur en colonne
+    int posLAncienne; // Position du pousseur en ligne avant le déplacement de la caisse
+    int posCAncienne; // Position du pousseur en colonne avant le déplacement de la caisse
     int[][] posCaisses; // Position des caisses
     int pere; // Indice du père dans la liste des états
 
-    EtatDuNiveau(int posL, int posC, int[][] posCaisses, int pere) {
-      this.posL = posL;
-      this.posC = posC;
+    EtatDuNiveau(int posL, int posC, int posLA, int posCA, int[][] posCaisses, int pere) {
+      this.posLNvl = posL;
+      this.posCNvl = posC;
+      this.posLAncienne = posLA;
+      this.posCAncienne = posCA;
       this.posCaisses = posCaisses;
       this.pere = pere;
     }
   }
 
+  class MouvementJoueur {
+    int posL; // Position du joueur en ligne
+    int posC; // Position du joueur en colonne
+    int mouvementL; // Mouvement du joueur en ligne (1 -> bas, -1 -> haut, 0 -> pas de mouvement)
+    int mouvementC; // Mouvement du joueur en colonne (1 -> droite, -1 -> gauche, 0 -> pas de
+                    // mouvement)
+
+    MouvementJoueur(int posL, int posC, int mouvementL, int mouvementC) {
+      this.posL = posL;
+      this.posC = posC;
+      this.mouvementL = mouvementL;
+      this.mouvementC = mouvementC;
+    }
+  }
+
   class Solution {
-    EtatDuNiveau[] etats;
+    EtatDuNiveau[] etats; // TODO: Move it to resoudre() (Avoir useless ram usage)
+    MouvementJoueur[] mouvements;
     int[][] posButs;
     Niveau niveauSansCaisse;
     int index = 0;
@@ -41,7 +61,8 @@ class IASolver extends IA {
       niveauSansCaisse = copieNiveauSansCaisseSansJoueur(niveau);
       index = 0;
       // Ajoute l'état initial
-      ajouteEtat(new EtatDuNiveau(niveau.lignePousseur(), niveau.colonnePousseur(), positionCaisses(niveau), -1));
+      ajouteEtat(
+          new EtatDuNiveau(niveau.lignePousseur(), niveau.colonnePousseur(), -1, -1, positionCaisses(niveau), -1));
     }
 
     private int[][] positionsButs(Niveau niveau) {
@@ -116,7 +137,7 @@ class IASolver extends IA {
     // Return true if this configuration already exists in the array
     private boolean dejaVu(int posL, int posC, int[][] posCaisses) {
       for (int i = 0; i < index; i++) {
-        if (etats[i].posL == posL && etats[i].posC == posC) {
+        if (etats[i].posLNvl == posL && etats[i].posCNvl == posC) {
           boolean caisses = true;
           for (int j = 0; j < posCaisses.length; j++) {
             if (etats[i].posCaisses[j][0] != posCaisses[j][0] || etats[i].posCaisses[j][1] != posCaisses[j][1]) {
@@ -155,10 +176,44 @@ class IASolver extends IA {
     }
 
     private void ajouteEtat(EtatDuNiveau etat) {
-      if (!dejaVu(etat.posL, etat.posC, etat.posCaisses)) {
+      if (!dejaVu(etat.posLNvl, etat.posCNvl, etat.posCaisses)) {
         etats[index] = etat;
         index++;
       }
+    }
+
+    private void extraireChemin() {
+      // Cas où l'on n'a pas trouvé de solution
+      if (!niveauTerminee(etats[index - 1].posCaisses)) {
+        System.out.println("Solution non trouvé");
+        return;
+      }
+      int[] chemin = new int[index];
+      int index_temp = index - 1;
+      int index_chemin = 0;
+      while (etats[index_temp].pere != -1) {
+        chemin[index_chemin] = index_temp;
+        index_temp = etats[index_temp].pere;
+        index_chemin++;
+      }
+      // On recup l'état, on a la pos du joueur +
+      MouvementJoueur[] mouvementsInner = new MouvementJoueur[index_chemin];
+      int indexChemin = index_chemin - 1;
+      int indexMouvementJoueur = 0;
+      // On parcours le chemin à l'envers
+      while (indexMouvementJoueur < index_chemin) {
+        int posl = etats[chemin[indexChemin]].posLNvl;
+        int posc = etats[chemin[indexChemin]].posCNvl;
+        // On calcul le mouvement du joueur
+        int verticale = etats[chemin[indexChemin]].posLAncienne - posl;
+        int horizontale = etats[chemin[indexChemin]].posCAncienne - posc;
+        MouvementJoueur mouvement = new MouvementJoueur(posl, posc, verticale, horizontale);
+        mouvementsInner[indexMouvementJoueur] = mouvement;
+        indexChemin--;
+        indexMouvementJoueur++;
+      }
+
+      mouvements = mouvementsInner;
     }
 
     public void resoudre() {
@@ -168,8 +223,8 @@ class IASolver extends IA {
         // On récupère l'état de l'indice actuel
         EtatDuNiveau etatCourant = etats[index_temp];
         // On récupère les infos
-        int posL = etatCourant.posL;
-        int posC = etatCourant.posC;
+        int posL = etatCourant.posLNvl;
+        int posC = etatCourant.posCNvl;
         int[][] posCaisses = etatCourant.posCaisses;
         // On récupère le niveau actuel
         Niveau niveauCourant = copieNiveauAvecCaisseAvecJoueur(niveauSansCaisse, posCaisses, posL, posC);
@@ -183,20 +238,21 @@ class IASolver extends IA {
         // On ajoute tout les mouvements de caisse possibles au tableau
         for (int i = 0; i < caisses.nb_mouvements; i++) {
           // On récupère la nouvelle position du joueur (position actuelle de la caisse)
-          // Affiche mouvements possibles
-          System.out.println("Position joueur: " + caisses.mouvementsPossibles[i][0].y + "."
-              + caisses.mouvementsPossibles[i][0].x + " | Position caisse: " + caisses.mouvementsPossibles[i][1].y + "."
-              + caisses.mouvementsPossibles[i][1].x + " | Position future caisse: "
-              + caisses.mouvementsPossibles[i][2].y + "." + caisses.mouvementsPossibles[i][2].x);
           int posLNew = caisses.mouvementsPossibles[i][1].y;
           int posCNew = caisses.mouvementsPossibles[i][1].x;
+          int posLAncienne = 0;
+          int posCAncienne = 0;
           // On récupère la nouvelle position de la caisse
           int[][] posCaissesNew = new int[posCaisses.length][2];
           for (int j = 0; j < posCaisses.length; j++) {
+            // Cas où la caisse bouge
             if (posCaisses[j][0] == caisses.mouvementsPossibles[i][1].y
                 && posCaisses[j][1] == caisses.mouvementsPossibles[i][1].x) {
+              posLAncienne = caisses.mouvementsPossibles[i][0].y;
+              posCAncienne = caisses.mouvementsPossibles[i][0].x;
               posCaissesNew[j][0] = caisses.mouvementsPossibles[i][2].y;
               posCaissesNew[j][1] = caisses.mouvementsPossibles[i][2].x;
+              // Cas où la caisse ne bouge pas
             } else {
               posCaissesNew[j][0] = posCaisses[j][0];
               posCaissesNew[j][1] = posCaisses[j][1];
@@ -207,7 +263,7 @@ class IASolver extends IA {
           // On vérifie si le mouvement est bloquant
           if (!mouvementBloquant(caisses.mouvementsPossibles[i][2])) {
             // On ajoute l'état
-            ajouteEtat(new EtatDuNiveau(posLNew, posCNew, posCaissesNew, index_temp));
+            ajouteEtat(new EtatDuNiveau(posLNew, posCNew, posLAncienne, posCAncienne, posCaissesNew, index_temp));
             // On vérifie si le niveau est terminé
             if (niveauTerminee(posCaissesNew)) {
               System.out.println("Niveau terminé");
@@ -218,7 +274,16 @@ class IASolver extends IA {
         }
         index_temp++;
       }
+      // On construit le bon chemin
+      extraireChemin();
+
+      // On affiche le chemin
+      for (int i = 0; i < mouvements.length; i++) {
+        System.out.println("Position " + i + " : " + mouvements[i].posL + " " + mouvements[i].posC + " | Mouvement "
+            + mouvements[i].mouvementL + " " + mouvements[i].mouvementC);
+      }
     }
+
   }
 
   class CaissesDeplacables {
