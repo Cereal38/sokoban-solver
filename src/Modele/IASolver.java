@@ -35,7 +35,7 @@ class IASolver extends IA {
 
     Solution() {
       etats = new EtatDuNiveau[1000];
-      niveauSansCaisse = copieNiveauSansCaisse(niveau);
+      niveauSansCaisse = copieNiveauSansCaisseSansJoueur(niveau);
       index = 0;
       // Ajoute l'état initial
       ajouteEtat(new EtatDuNiveau(niveau.lignePousseur(), niveau.colonnePousseur(), positionCaisses(niveau), -1));
@@ -56,12 +56,13 @@ class IASolver extends IA {
       return posCaisses;
     }
 
-    private Niveau copieNiveauSansCaisse(Niveau niveauAvecCaisses) {
+    private Niveau copieNiveauSansCaisseSansJoueur(Niveau niveauAvecCaissesAvecJoueur) {
       Niveau niveauSansCaisse = niveau.clone();
-      // Parcours tout le niveau et remplace les caisses par des cases vides
-      for (int i = 0; i < niveauAvecCaisses.lignes(); i++) {
-        for (int j = 0; j < niveauAvecCaisses.colonnes(); j++) {
-          if (niveauAvecCaisses.aCaisse(i, j)) {
+      // Parcours tout le niveau et remplace les caisses et le joueur par des cases
+      // vides
+      for (int i = 0; i < niveauAvecCaissesAvecJoueur.lignes(); i++) {
+        for (int j = 0; j < niveauAvecCaissesAvecJoueur.colonnes(); j++) {
+          if (niveauAvecCaissesAvecJoueur.aCaisse(i, j) || niveauAvecCaissesAvecJoueur.aPousseur(i, j)) {
             niveauSansCaisse.cases[i][j] = Niveau.VIDE;
           }
         }
@@ -69,18 +70,41 @@ class IASolver extends IA {
       return niveauSansCaisse;
     }
 
-    private Niveau copieNiveauAvecCaisse(Niveau niveauSansCaisse, int[][] posCaisses) {
-      Niveau niveauAvecCaisse = niveauSansCaisse.clone();
-      // Parcours tout le niveau et remplace les cases vides par des caisses
+    private Niveau copieNiveauAvecCaisseAvecJoueur(Niveau niveauSansCaisseSansJoueur, int[][] posCaisses,
+        int posLJoueur, int posCJoueur) {
+      Niveau niveauAvecCaisseAvecJoueur = niveauSansCaisseSansJoueur.clone();
+      // Parcours tout le niveau et ajoute les caisses
       for (int i = 0; i < posCaisses.length; i++) {
-        niveauAvecCaisse.cases[posCaisses[i][0]][posCaisses[i][1]] = Niveau.CAISSE;
+        niveauAvecCaisseAvecJoueur.cases[posCaisses[i][0]][posCaisses[i][1]] = Niveau.CAISSE;
       }
-      return niveauAvecCaisse;
+      // Ajoute le joueur
+      niveauAvecCaisseAvecJoueur.cases[posLJoueur][posCJoueur] = Niveau.POUSSEUR;
+      return niveauAvecCaisseAvecJoueur;
+    }
+
+    // Return true if this configuration already exists in the array
+    private boolean dejaVu(int posL, int posC, int[][] posCaisses) {
+      for (int i = 0; i < index; i++) {
+        if (etats[i].posL == posL && etats[i].posC == posC) {
+          boolean caisses = true;
+          for (int j = 0; j < posCaisses.length; j++) {
+            if (etats[i].posCaisses[j][0] != posCaisses[j][0] || etats[i].posCaisses[j][1] != posCaisses[j][1]) {
+              caisses = false;
+              break;
+            }
+          }
+          if (caisses)
+            return true;
+        }
+      }
+      return false;
     }
 
     private void ajouteEtat(EtatDuNiveau etat) {
-      etats[index] = etat;
-      index++;
+      if (!dejaVu(etat.posL, etat.posC, etat.posCaisses)) {
+        etats[index] = etat;
+        index++;
+      }
     }
 
     public void resoudre() {
@@ -94,7 +118,7 @@ class IASolver extends IA {
         int posC = etatCourant.posC;
         int[][] posCaisses = etatCourant.posCaisses;
         // On récupère le niveau actuel
-        Niveau niveauCourant = copieNiveauAvecCaisse(niveauSansCaisse, posCaisses);
+        Niveau niveauCourant = copieNiveauAvecCaisseAvecJoueur(niveauSansCaisse, posCaisses, posL, posC);
         // On récupère les cases accessibles
         CasesAccessibles cases = new CasesAccessibles(niveauCourant, posL, posC);
         // On récupère les mouvements possibles
