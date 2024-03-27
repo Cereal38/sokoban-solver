@@ -131,6 +131,29 @@ class IASolver extends IA {
       return false;
     }
 
+    // On vérifie si on ne va pas mettre la caisse dans un coin (qui n'est pas un
+    // but)
+    private boolean mouvementBloquant(Point posCaisse) {
+      // On vérifie les cas ou il y a un mur dans 2 coins adjacents
+      boolean caseHautMur = niveau.aMur(posCaisse.y - 1, posCaisse.x);
+      boolean caseDroiteMur = niveau.aMur(posCaisse.y, posCaisse.x + 1);
+      boolean caseBasMur = niveau.aMur(posCaisse.y + 1, posCaisse.x);
+      boolean caseGaucheMur = niveau.aMur(posCaisse.y, posCaisse.x - 1);
+      if (caseHautMur && caseDroiteMur) {
+        return true;
+      }
+      if (caseHautMur && caseGaucheMur) {
+        return true;
+      }
+      if (caseDroiteMur && caseBasMur) {
+        return true;
+      }
+      if (caseBasMur && caseGaucheMur) {
+        return true;
+      }
+      return false;
+    }
+
     private void ajouteEtat(EtatDuNiveau etat) {
       if (!dejaVu(etat.posL, etat.posC, etat.posCaisses)) {
         etats[index] = etat;
@@ -179,13 +202,19 @@ class IASolver extends IA {
               posCaissesNew[j][1] = posCaisses[j][1];
             }
           }
-          // On ajoute l'état
-          ajouteEtat(new EtatDuNiveau(posLNew, posCNew, posCaissesNew, index_temp));
-          // On vérifie si le niveau est terminé
-          if (niveauTerminee(posCaissesNew)) {
-            System.out.println("Niveau terminé");
-            break;
+
+          // On ajoute des heuristiques
+          // On vérifie si le mouvement est bloquant
+          if (!mouvementBloquant(caisses.mouvementsPossibles[i][2])) {
+            // On ajoute l'état
+            ajouteEtat(new EtatDuNiveau(posLNew, posCNew, posCaissesNew, index_temp));
+            // On vérifie si le niveau est terminé
+            if (niveauTerminee(posCaissesNew)) {
+              System.out.println("Niveau terminé");
+              break;
+            }
           }
+
         }
         index_temp++;
       }
@@ -227,10 +256,8 @@ class IASolver extends IA {
           }
         }
         // Pareil pour le bas
-        if (casesAccessibles.existe(caisseY + 1,
-            caisseX) != -1) {
-          if (niveau.estOccupable(caisseY - 1,
-              caisseX)) {
+        if (casesAccessibles.existe(caisseY + 1, caisseX) != -1) {
+          if (niveau.estOccupable(caisseY - 1, caisseX)) {
             mouvementsPossibles[nb_mouvements][0] = new Point(caisseX, caisseY + 1);
             mouvementsPossibles[nb_mouvements][1] = new Point(caisseX, caisseY);
             mouvementsPossibles[nb_mouvements][2] = new Point(caisseX, caisseY - 1);
@@ -238,10 +265,8 @@ class IASolver extends IA {
           }
         }
         // Pareil pour la droite
-        if (casesAccessibles.existe(caisseY,
-            caisseX - 1) != -1) {
-          if (niveau.estOccupable(caisseY,
-              caisseX + 1)) {
+        if (casesAccessibles.existe(caisseY, caisseX - 1) != -1) {
+          if (niveau.estOccupable(caisseY, caisseX + 1)) {
             mouvementsPossibles[nb_mouvements][0] = new Point(caisseX - 1, caisseY);
             mouvementsPossibles[nb_mouvements][1] = new Point(caisseX, caisseY);
             mouvementsPossibles[nb_mouvements][2] = new Point(caisseX + 1, caisseY);
@@ -249,10 +274,8 @@ class IASolver extends IA {
           }
         }
         // Pareil pour la gauche
-        if (casesAccessibles.existe(caisseY,
-            caisseX + 1) != -1) {
-          if (niveau.estOccupable(caisseY,
-              caisseX - 1)) {
+        if (casesAccessibles.existe(caisseY, caisseX + 1) != -1) {
+          if (niveau.estOccupable(caisseY, caisseX - 1)) {
             mouvementsPossibles[nb_mouvements][0] = new Point(caisseX + 1, caisseY);
             mouvementsPossibles[nb_mouvements][1] = new Point(caisseX, caisseY);
             mouvementsPossibles[nb_mouvements][2] = new Point(caisseX - 1, caisseY);
