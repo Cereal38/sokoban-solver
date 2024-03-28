@@ -41,7 +41,7 @@ class IASolver extends IA {
   class Solution {
     EtatDuNiveau[] etats; // TODO: Move it to resoudre() (Avoir useless ram usage)
     MouvementJoueur[] mouvements;
-    int[][] posButs;
+    Point[] posButs;
     Niveau niveauSansCaisse;
     int index = 0;
 
@@ -58,14 +58,14 @@ class IASolver extends IA {
               -1));
     }
 
-    private int[][] positionsButs(Niveau niveau) {
+    // Renvoie la position des buts dans le niveau
+    private Point[] positionsButs(Niveau niveau) {
       int indexButs = 0;
-      int[][] posButs = new int[niveau.nbButs][2];
+      Point[] posButs = new Point[niveau.nbButs];
       for (int i = 0; i < niveau.lignes(); i++) {
         for (int j = 0; j < niveau.colonnes(); j++) {
           if (niveau.aBut(i, j)) {
-            posButs[indexButs][0] = i;
-            posButs[indexButs][1] = j;
+            posButs[indexButs] = new Point(j, i);
             indexButs++;
           }
         }
@@ -74,6 +74,7 @@ class IASolver extends IA {
       return posButs;
     }
 
+    // Renvoie la position des caisses dans le niveau
     private int[][] positionCaisses(Niveau niveau) {
       int indexCaisse = 0;
       int[][] posCaisses = new int[niveau.nbButs][2];
@@ -89,11 +90,12 @@ class IASolver extends IA {
       return posCaisses;
     }
 
+    // Renvoie true si toutes les caisses sont sur des buts
     private boolean niveauTerminee(int[][] positionsCaisses) {
       int nbBut = 0;
       for (int i = 0; i < positionsCaisses.length; i++) {
         for (int j = 0; j < posButs.length; j++) {
-          if (positionsCaisses[i][0] == posButs[j][0] && positionsCaisses[i][1] == posButs[j][1]) {
+          if (positionsCaisses[i][0] == posButs[j].y && positionsCaisses[i][1] == posButs[j].x) {
             nbBut++;
           }
         }
@@ -184,12 +186,12 @@ class IASolver extends IA {
       int[] chemin = new int[index];
       int indexTemp = index - 1;
       int indexChemin = 0;
+      // On remonte le chemin
       while (etats[indexTemp].pere != -1) {
         chemin[indexChemin] = indexTemp;
         indexTemp = etats[indexTemp].pere;
         indexChemin++;
       }
-      // On recup l'état, on a la pos du joueur +
       MouvementJoueur[] mouvementsInner = new MouvementJoueur[indexChemin];
       int indexCheminRetour = indexChemin - 1;
       int indexMouvementJoueur = 0;
