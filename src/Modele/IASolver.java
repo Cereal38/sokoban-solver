@@ -60,12 +60,12 @@ class IASolver extends IA {
   }
 
   class MouvementJoueur {
-    Point joueur;
+    Position joueur;
     int mouvementL; // Mouvement du joueur en ligne (1 -> bas, -1 -> haut, 0 -> pas de mouvement)
     int mouvementC; // Mouvement du joueur en colonne (1 -> droite, -1 -> gauche, 0 -> pas de
                     // mouvement)
 
-    MouvementJoueur(Point joueur, int mouvementL, int mouvementC) {
+    MouvementJoueur(Position joueur, int mouvementL, int mouvementC) {
       this.joueur = joueur;
       this.mouvementL = mouvementL;
       this.mouvementC = mouvementC;
@@ -237,7 +237,7 @@ class IASolver extends IA {
         // On calcul le mouvement du joueur
         int verticale = etats[chemin[indexCheminRetour]].positionAvantDeplacement.y - posl;
         int horizontale = etats[chemin[indexCheminRetour]].positionAvantDeplacement.x - posc;
-        MouvementJoueur mouvement = new MouvementJoueur(new Point(posc, posl), verticale, horizontale);
+        MouvementJoueur mouvement = new MouvementJoueur(new Position(posc, posl), verticale, horizontale);
         mouvementsInner[indexMouvementJoueur] = mouvement;
         indexCheminRetour--;
         indexMouvementJoueur++;
