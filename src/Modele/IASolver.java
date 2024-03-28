@@ -408,17 +408,6 @@ class IASolver extends IA {
       return -1;
     }
 
-    // Double la taille du tableau si il est complet
-    protected void redimensionne() {
-      if (taille >= nbEleme) {
-        taille = taille * 2;
-        Point[] nouveau = new Point[taille];
-        for (int i = 0; i < nbEleme; i++)
-          nouveau[i] = position[i];
-        position = nouveau;
-      }
-    }
-
   }
 
   @Override
