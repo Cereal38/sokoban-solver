@@ -152,20 +152,13 @@ class IASolver extends IA {
     // but)
     private boolean mouvementBloquant(Position posCaisse) {
       // On vérifie les cas ou il y a un mur dans 2 coins adjacents
-      boolean caseHautMur = niveau.aMur(posCaisse.ligne() - 1, posCaisse.colonne());
-      boolean caseDroiteMur = niveau.aMur(posCaisse.ligne(), posCaisse.colonne() + 1);
-      boolean caseBasMur = niveau.aMur(posCaisse.ligne() + 1, posCaisse.colonne());
-      boolean caseGaucheMur = niveau.aMur(posCaisse.ligne(), posCaisse.colonne() - 1);
-      if (caseHautMur && caseDroiteMur) {
-        return true;
-      }
-      if (caseHautMur && caseGaucheMur) {
-        return true;
-      }
-      if (caseDroiteMur && caseBasMur) {
-        return true;
-      }
-      if (caseBasMur && caseGaucheMur) {
+      boolean caseHautMur = niveau.aMur(posCaisse.haut().ligne(), posCaisse.haut().colonne());
+      boolean caseDroiteMur = niveau.aMur(posCaisse.droite().ligne(), posCaisse.droite().colonne());
+      boolean caseGaucheMur = niveau.aMur(posCaisse.gauche().ligne(), posCaisse.gauche().colonne());
+      boolean caseBasMur = niveau.aMur(posCaisse.bas().ligne(), posCaisse.bas().colonne());
+      // On vérifie si la caisse est dans un coin
+      if (caseHautMur && caseDroiteMur || caseDroiteMur && caseBasMur || caseBasMur && caseGaucheMur
+          || caseGaucheMur && caseHautMur) {
         return true;
       }
       return false;
@@ -231,7 +224,6 @@ class IASolver extends IA {
         CaissesDeplacables caisses = new CaissesDeplacables(cases.nbCaissesDeplacables);
         caisses.trouverMouvementsCaisses(niveauCourant, cases);
         System.out.println("Etat " + indexParcours);
-        niveauCourant.affiche();
         // On ajoute tout les mouvements de caisse possibles au tableau
         for (int i = 0; i < caisses.nbMouvements; i++) {
           // On récupère la nouvelle position du joueur (position actuelle de la caisse)
