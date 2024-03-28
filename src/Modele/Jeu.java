@@ -26,29 +26,14 @@ package Modele;
  *          38401 Saint Martin d'Hères
  */
 
-import Global.Configuration;
 import Patterns.Observable;
 
-import java.io.InputStream;
-
 public class Jeu extends Observable {
-	protected Niveau n;
+	Niveau n;
 	LecteurNiveaux l;
 
-	public Jeu() {
-		init(Configuration.lisChaine("FichierNiveaux"));
-	}
-
-	public Jeu(String name) {
-		init("res/Niveaux/" + name + ".txt");
-	}
-
-	private void init(String niveaux) {
-		InputStream in;
-		in = Configuration.ouvre(niveaux);
-		Configuration.info("Niveaux trouvés");
-
-		l = new LecteurNiveaux(in);
+	public Jeu(LecteurNiveaux lect) {
+		l = lect;
 		prochainNiveau();
 	}
 
@@ -61,13 +46,12 @@ public class Jeu extends Observable {
 	}
 
 	public void joue(Coup c) {
-		n.faire(c);
+		n.joue(c);
 		metAJour();
 	}
 
 	public void prochainNiveau() {
 		n = l.lisProchainNiveau();
-		metAJour();
 	}
 
 	public boolean niveauTermine() {
@@ -84,25 +68,5 @@ public class Jeu extends Observable {
 
 	public int colonnePousseur() {
 		return n.colonnePousseur();
-	}
-
-	public boolean peutAnnuler() {
-		return niveau().peutAnnuler();
-	}
-
-	public boolean peutRefaire() {
-		return niveau().peutRefaire();
-	}
-
-	public Coup annuler() {
-		Coup cp = n.annuler();
-		metAJour();
-		return cp;
-	}
-
-	public Coup refaire() {
-		Coup cp = n.refaire();
-		metAJour();
-		return cp;
 	}
 }

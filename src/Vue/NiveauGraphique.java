@@ -47,7 +47,7 @@ public class NiveauGraphique extends JComponent implements Observateur {
 	Image [][] pousseurs;
 	int direction, etape;
 
-	public NiveauGraphique(Jeu jeu) {
+	NiveauGraphique(Jeu jeu) {
 		j = jeu;
 		j.ajouteObservateur(this);
 		pousseur = lisImage("Pousseur");
@@ -66,7 +66,7 @@ public class NiveauGraphique extends JComponent implements Observateur {
 		metAJourPousseur();
 	}
 
-	public Image lisImage(String nom) {
+	private Image lisImage(String nom) {
 		InputStream in = Configuration.ouvre("Images/" + nom + ".png");
 		Configuration.info("Chargement de l'image " + nom);
 		try {
@@ -151,11 +151,11 @@ public class NiveauGraphique extends JComponent implements Observateur {
 		drawable.drawLine(x+h-s, y+s, x+s, y+h-s);
 	}
 
-	public int hauteurCase() {
+	int hauteurCase() {
 		return hauteurCase;
 	}
 
-	public int largeurCase() {
+	int largeurCase() {
 		return largeurCase;
 	}
 

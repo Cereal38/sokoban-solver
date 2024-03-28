@@ -28,8 +28,6 @@ package Vue;
 
 public interface InterfaceUtilisateur {
 	void toggleFullscreen();
-	void changeEtatIA(boolean b);
-	void changeEtatAnimations(boolean b);
 	void changeEtape();
 	void metAJourDirection(int dL, int dC);
 	void decale(int versL, int versC, double dL, double dC);

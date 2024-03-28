@@ -25,32 +25,39 @@
  *          38401 Saint Martin d'Hères
  */
 
+import java.io.InputStream;
+
 import Controleur.ControleurMediateur;
 import Global.Configuration;
 import Modele.Jeu;
+import Modele.LecteurNiveaux;
 import Vue.CollecteurEvenements;
 import Vue.InterfaceGraphique;
 import Vue.InterfaceTextuelle;
 
 public class Sokoban {
-	final static String typeInterface = Configuration.lisChaine("Interface");
+  final static String typeInterface = Configuration.typeInterface;
 
-	public static void main(String[] args) {
-		Jeu j;
-		if (args.length > 0)
-			j = new Jeu(args[0]);
-		else
-			j = new Jeu();
-		CollecteurEvenements control = new ControleurMediateur(j);
-		switch (typeInterface) {
-			case "Graphique":
-				InterfaceGraphique.demarrer(j, control);
-				break;
-			case "Textuelle":
-				InterfaceTextuelle.demarrer(j, control);
-				break;
-			default:
-				Configuration.erreur("Interface inconnue");
-		}
-	}
+  public static void main(String[] args) {
+    InputStream in;
+    if (args.length > 0)
+      in = Configuration.ouvre("Niveaux/" + args[0] + ".txt");
+    else
+      in = Configuration.ouvre("Niveaux/Original.txt");
+    Configuration.info("Niveaux trouvés");
+
+    LecteurNiveaux l = new LecteurNiveaux(in);
+    Jeu j = new Jeu(l);
+    CollecteurEvenements control = new ControleurMediateur(j);
+    switch (typeInterface) {
+      case "Graphique":
+        InterfaceGraphique.demarrer(j, control);
+        break;
+      case "Textuelle":
+        InterfaceTextuelle.demarrer(j, control);
+        break;
+      default:
+        Configuration.erreur("Interface inconnue");
+    }
+  }
 }

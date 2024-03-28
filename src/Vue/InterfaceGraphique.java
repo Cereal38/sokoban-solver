@@ -27,20 +27,17 @@ package Vue;
  */
 
 import Modele.Jeu;
-import Patterns.Observateur;
 
 import javax.swing.*;
 import java.awt.*;
 
 // L'interface runnable déclare une méthode run
-public class InterfaceGraphique implements Runnable, InterfaceUtilisateur, Observateur {
+public class InterfaceGraphique implements Runnable, InterfaceUtilisateur {
 	Jeu j;
 	CollecteurEvenements control;
 	JFrame frame;
 	boolean maximized;
 	NiveauGraphique niv;
-	JLabel nbPas, nbPoussees;
-	JToggleButton IA, animation;
 
 	InterfaceGraphique(Jeu jeu, CollecteurEvenements c) {
 		j = jeu;
@@ -65,93 +62,15 @@ public class InterfaceGraphique implements Runnable, InterfaceUtilisateur, Obser
 		}
 	}
 
-	private JLabel creerLabel(String text) {
-		JLabel label = new JLabel(text);
-		label.setAlignmentX(Component.CENTER_ALIGNMENT);
-		return label;
-	}
-
-	private JToggleButton creerToggleButton(String text) {
-		JToggleButton bouton = new JToggleButton(text);
-		bouton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		bouton.setFocusable(false);
-		return bouton;
-	}
-
-	private JButton creerButton(String text) {
-		JButton bouton = new JButton(text);
-		bouton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		bouton.setFocusable(false);
-		return bouton;
-	}
-
-	private static Box creerBoiteHorizontale() {
-		Box boite = Box.createHorizontalBox();
-		boite.setAlignmentX(Component.CENTER_ALIGNMENT);
-		return boite;
-	}
-
-	public static JComponent creerAnnulerRefaire(Jeu j, CollecteurEvenements control) {
-		BoutonAnnuler annuler = new BoutonAnnuler(j);
-		annuler.setFocusable(false);
-		BoutonRefaire refaire = new BoutonRefaire(j);
-		refaire.setFocusable(false);
-		Box annulerRefaire = creerBoiteHorizontale();
-		annulerRefaire.add(annuler);
-		annulerRefaire.add(refaire);
-		annuler.addActionListener(new AdaptateurAnnuler(control));
-		refaire.addActionListener(new AdaptateurRefaire(control));
-		return annulerRefaire;
-	}
-
 	public void run() {
-		// Eléments de l'interface
 		frame = new JFrame("Ma fenetre a moi");
 		niv = new NiveauGraphique(j);
-
-		// Texte et contrôles à droite de la fenêtre
-		Box boiteTexte = Box.createVerticalBox();
-
-		// Titre
-		boiteTexte.add(creerLabel("Sokoban"));
-
-		// Remplissage de l'espace entre le titre et les boutons
-		boiteTexte.add(Box.createGlue());
-
-		// Infos sur le jeu
-		nbPas = creerLabel("Pas : 0");
-		boiteTexte.add(nbPas);
-		nbPoussees = creerLabel("Poussées : 0");
-		boiteTexte.add(nbPoussees);
-
-		// Contrôles comportementaux
-		IA = creerToggleButton("IA");
-		boiteTexte.add(IA);
-		animation = creerToggleButton("Animation");
-		boiteTexte.add(animation);
-		JButton prochain = creerButton("Prochain");
-		boiteTexte.add(prochain);
-
-		// Annuler / refaire
-		boiteTexte.add(creerAnnulerRefaire(j, control));
-
-		// Remplissage de l'espace entre le titre et les boutons
-		boiteTexte.add(Box.createGlue());
-
-		boiteTexte.add(creerLabel("Copyright G. Huard, 2018"));
-
-		// Retransmission des évènements au contrôleur
 		niv.addMouseListener(new AdaptateurSouris(niv, control));
 		frame.addKeyListener(new AdaptateurClavier(control));
-		Timer chrono = new Timer(16, new AdaptateurTemps(control));
-		IA.addActionListener(new AdaptateurIA(control));
-		animation.addActionListener(new AdaptateurAnimations(control));
-		prochain.addActionListener(new AdaptateurProchain(control));
 
 		// Mise en place de l'interface
-		frame.add(boiteTexte, BorderLayout.EAST);
 		frame.add(niv);
-		j.ajouteObservateur(this);
+		Timer chrono = new Timer(16, new AdaptateurTemps(control));
 		chrono.start();
 
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -159,34 +78,15 @@ public class InterfaceGraphique implements Runnable, InterfaceUtilisateur, Obser
 		frame.setVisible(true);
 	}
 
-	@Override
-	public void changeEtatIA(boolean b) {
-		IA.setSelected(b);
-	}
-
-	@Override
-	public void changeEtatAnimations(boolean b) {
-		animation.setSelected(b);
-	}
-
-	@Override
 	public void decale(int l, int c, double dl, double dc) {
 		niv.decale(l, c, dl, dc);
 	}
 
-	@Override
 	public void metAJourDirection(int dL, int dC) {
 		niv.metAJourDirection(dL, dC);
 	}
 
-	@Override
 	public void changeEtape() {
 		niv.changeEtape();
-	}
-
-	@Override
-	public void miseAJour() {
-		nbPas.setText("Pas : " + j.niveau().nbPas());
-		nbPoussees.setText("Poussées : " + j.niveau().nbPoussees());
 	}
 }

@@ -1,4 +1,3 @@
-package Editeur;
 /*
  * Sokoban - Encore une nouvelle version (à but pédagogique) du célèbre jeu
  * Copyright (C) 2018 Guillaume Huard
@@ -26,56 +25,33 @@ package Editeur;
  *          38401 Saint Martin d'Hères
  */
 
-import Vue.NiveauGraphique;
+import javax.swing.*;
 
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+// L'interface runnable déclare une méthode run
+public class DemoFenetre implements Runnable {
+	public void run() {
+		// Creation d'une fenetre
+		JFrame frame = new JFrame("Ma fenetre a moi");
 
-public class GestionnaireNiveau extends MouseAdapter {
-	NiveauGraphique niv;
-	Controleur control;
-	DragAndDrop DAD;
-	int selection;
+		// Ajout de notre composant de dessin dans la fenetre
+		AireDeDessin aire = new AireDeDessin();
+		frame.add(aire);
 
-	void selectionne(int num) {
-		selection = num;
-		control.selectionne(num);
+		// Ecoute des évènements liés à la souris dans l'AireDeDessin
+		aire.addMouseListener(new EcouteurDeSouris(aire));
+
+		// Un clic sur le bouton de fermeture clos l'application
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		// On fixe la taille et on demarre
+		frame.setSize(500, 300);
+		frame.setVisible(true);
 	}
 
-	GestionnaireNiveau(NiveauGraphique n, Controleur c, DragAndDrop d) {
-		niv = n;
-		control = c;
-		DAD = d;
-	}
-
-	void demarreDAD(Image i, MouseEvent e) {
-		DAD.demarre(i, e, niv.largeurCase(), niv.hauteurCase());
-	}
-
-	void modifie(int x, int y) {
-		int ligne = (y / niv.hauteurCase());
-		int colonne = (x / niv.largeurCase());
-		control.clicSouris(ligne, colonne);
-	}
-
-	@Override
-	public void mousePressed(MouseEvent e) {
-		modifie(e.getX(), e.getY());
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		if (DAD.enCours()) {
-			Point p = DAD.getPos(niv);
-			modifie(p.x, p.y);
-		}
-	}
-
-	@Override
-	public void mouseDragged(MouseEvent e) {
-		if (DAD.enCours()) {
-			niv.miseAJour();
-		}
+	public static void main(String[] args) {
+		// Swing s'exécute dans un thread séparé. En aucun cas il ne faut accéder directement
+		// aux composants graphiques depuis le thread principal. Swing fournit la méthode
+		// invokeLater pour demander au thread de Swing d'exécuter la méthode run d'un Runnable.
+		SwingUtilities.invokeLater(new DemoFenetre());
 	}
 }

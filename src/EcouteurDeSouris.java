@@ -24,37 +24,20 @@
  *          Domaine universitaire
  *          38401 Saint Martin d'Hères
  */
-package Editeur;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-class GestionnaireSelection extends MouseAdapter implements ActionListener {
-	InterfaceGraphique inter;
-	GestionnaireNiveau niveau;
-	int num;
+public class EcouteurDeSouris extends MouseAdapter {
+	AireDeDessin aire;
 
-	GestionnaireSelection(InterfaceGraphique f, GestionnaireNiveau s, int i) {
-		inter = f;
-		niveau = s;
-		num = i;
-	}
-
-	void selectionne() {
-		niveau.selectionne(num);
-		inter.selectionne(num);
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		selectionne();
+	EcouteurDeSouris(AireDeDessin a) {
+		aire = a;
 	}
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-		selectionne();
-		niveau.demarreDAD(inter.image(num), e);
+		aire.fixePosition(e.getX(), e.getY());
+		aire.repaint();
 	}
 }
