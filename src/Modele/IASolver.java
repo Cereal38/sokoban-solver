@@ -313,7 +313,7 @@ class IASolver extends IA {
   }
 
   class CaissesDeplacables {
-    Point[][] mouvementsPossibles;
+    Position[][] mouvementsPossibles;
     int nbMouvements = 0;
     int nbCaissesDeplacables;
 
@@ -327,7 +327,7 @@ class IASolver extends IA {
     public void trouverMouvementsCaisses(Niveau niveau, CasesAccessibles casesAccessibles) {
       // On reset les infos
       nbMouvements = 0;
-      mouvementsPossibles = new Point[niveau.nbButs * 4][3];
+      mouvementsPossibles = new Position[nbCaissesDeplacables * 4][3];
       for (int i = 0; i < nbCaissesDeplacables; i++) {
         // On regarde si la case en haut est accessible
         // Si la case est accessible, on regarde si la case à l'opposée est libre (ou un
@@ -335,45 +335,43 @@ class IASolver extends IA {
         // Si vrai on ajoute le mouvement
         int caisseX = casesAccessibles.caissesAccessibles[i].x;
         int caisseY = casesAccessibles.caissesAccessibles[i].y;
-        Position caisseHaut = new Position(caisseX, caisseY).haut();
-        Position caisseBas = new Position(caisseX, caisseY).bas();
-        Position caisseGauche = new Position(caisseX, caisseY).gauche();
-        Position caisseDroite = new Position(caisseX, caisseY).droite();
-        if (casesAccessibles.existe(caisseHaut) != EXISTE_PAS) {
+        Position positionCaisse = new Position(caisseX, caisseY);
+        // On regarde si la case en haut est accessible
+        if (casesAccessibles.existe(positionCaisse.haut()) != EXISTE_PAS) {
           if (niveau.estOccupable(caisseY + 1, caisseX)) {
             // Poisition du joueur requise pour déplacer la caisse
-            mouvementsPossibles[nbMouvements][0] = new Point(caisseX, caisseY - 1);
+            mouvementsPossibles[nbMouvements][0] = positionCaisse.haut();
             // Position de la caisse
-            mouvementsPossibles[nbMouvements][1] = new Point(caisseX, caisseY);
+            mouvementsPossibles[nbMouvements][1] = positionCaisse;
             // Future position de la caisse
-            mouvementsPossibles[nbMouvements][2] = new Point(caisseX, caisseY + 1);
+            mouvementsPossibles[nbMouvements][2] = positionCaisse.bas();
             nbMouvements++;
           }
         }
         // Pareil pour le bas
-        if (casesAccessibles.existe(caisseBas) != EXISTE_PAS) {
+        if (casesAccessibles.existe(positionCaisse.bas()) != EXISTE_PAS) {
           if (niveau.estOccupable(caisseY - 1, caisseX)) {
-            mouvementsPossibles[nbMouvements][0] = new Point(caisseX, caisseY + 1);
-            mouvementsPossibles[nbMouvements][1] = new Point(caisseX, caisseY);
-            mouvementsPossibles[nbMouvements][2] = new Point(caisseX, caisseY - 1);
-            nbMouvements++;
-          }
-        }
-        // Pareil pour la droite
-        if (casesAccessibles.existe(caisseGauche) != EXISTE_PAS) {
-          if (niveau.estOccupable(caisseY, caisseX + 1)) {
-            mouvementsPossibles[nbMouvements][0] = new Point(caisseX - 1, caisseY);
-            mouvementsPossibles[nbMouvements][1] = new Point(caisseX, caisseY);
-            mouvementsPossibles[nbMouvements][2] = new Point(caisseX + 1, caisseY);
+            mouvementsPossibles[nbMouvements][0] = positionCaisse.bas();
+            mouvementsPossibles[nbMouvements][1] = positionCaisse;
+            mouvementsPossibles[nbMouvements][2] = positionCaisse.haut();
             nbMouvements++;
           }
         }
         // Pareil pour la gauche
-        if (casesAccessibles.existe(caisseDroite) != EXISTE_PAS) {
+        if (casesAccessibles.existe(positionCaisse.gauche()) != EXISTE_PAS) {
+          if (niveau.estOccupable(caisseY, caisseX + 1)) {
+            mouvementsPossibles[nbMouvements][0] = positionCaisse.gauche();
+            mouvementsPossibles[nbMouvements][1] = positionCaisse;
+            mouvementsPossibles[nbMouvements][2] = positionCaisse.droite();
+            nbMouvements++;
+          }
+        }
+        // Pareil pour la droite
+        if (casesAccessibles.existe(positionCaisse.droite()) != EXISTE_PAS) {
           if (niveau.estOccupable(caisseY, caisseX - 1)) {
-            mouvementsPossibles[nbMouvements][0] = new Point(caisseX + 1, caisseY);
-            mouvementsPossibles[nbMouvements][1] = new Point(caisseX, caisseY);
-            mouvementsPossibles[nbMouvements][2] = new Point(caisseX - 1, caisseY);
+            mouvementsPossibles[nbMouvements][0] = positionCaisse.droite();
+            mouvementsPossibles[nbMouvements][1] = positionCaisse;
+            mouvementsPossibles[nbMouvements][2] = positionCaisse.gauche();
             nbMouvements++;
           }
         }
