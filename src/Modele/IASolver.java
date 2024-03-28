@@ -30,11 +30,16 @@ class IASolver extends IA {
     Position joueur; // Emplacement du joueur pour déplacer la caisse
     Position caisse; // Emplacement de la caisse
     Position caisseDestination; // Emplacement de la caisse après le déplacement
+    int vecteurLigne; // Vecteur de déplacement en ligne
+    int vecteurColonne; // Vecteur de déplacement en colonne
 
-    MouvementJoueur(Position joueur, Position caisse, Position caisseDestination) {
+    MouvementJoueur(Position joueur, Position caisse, Position caisseDestination, int vecteurLigne,
+        int vecteurColonne) {
       this.joueur = joueur;
       this.caisse = caisse;
       this.caisseDestination = caisseDestination;
+      this.vecteurLigne = vecteurLigne;
+      this.vecteurColonne = vecteurColonne;
     }
   }
 
@@ -197,7 +202,8 @@ class IASolver extends IA {
         Position positionCaisseDestination = new Position(positionCaisse.colonne() + vecteurColonne,
             positionCaisse.ligne() + vecteurLigne);
         // On calcul le mouvement du joueur
-        MouvementJoueur mouvement = new MouvementJoueur(positionJoueur, positionCaisse, positionCaisseDestination);
+        MouvementJoueur mouvement = new MouvementJoueur(positionJoueur, positionCaisse, positionCaisseDestination,
+            vecteurLigne, vecteurColonne);
         mouvementsInner[indexMouvementJoueur] = mouvement;
         indexCheminRetour--;
         indexMouvementJoueur++;
@@ -207,7 +213,6 @@ class IASolver extends IA {
     }
 
     public void resoudre() {
-      System.out.println("NIVEAU : " + niveau.nom());
       indexParcours = 0;
       boolean solutionTrouvee = false;
       // Tant qu'il reste des élements dans la liste
@@ -225,7 +230,8 @@ class IASolver extends IA {
         // On récupère les mouvements possibles
         CaissesDeplacables caisses = new CaissesDeplacables(cases.nbCaissesDeplacables);
         caisses.trouverMouvementsCaisses(niveauCourant, cases);
-        System.out.println("Etat " + indexParcours);
+        if (indexParcours % 1000 == 0)
+          System.out.println("Etat " + indexParcours);
         // On ajoute tout les mouvements de caisse possibles au tableau
         for (int i = 0; i < caisses.nbMouvements; i++) {
           // On récupère la nouvelle position du joueur (position actuelle de la caisse)
@@ -444,7 +450,9 @@ class IASolver extends IA {
       Coup coup = new Coup();
       // On récupère les mouvements
       coup.deplacementPousseur(joueurL, joueurC, joueurDestination.ligne(), joueurDestination.colonne());
+      resultat.insereQueue(coup);
       // On déplace la caisse
+      coup = new Coup();
       coup.deplacementCaisse(caisse.ligne(), caisse.colonne(), caisseDestination.ligne(), caisseDestination.colonne());
       resultat.insereQueue(coup);
       joueurL = joueurDestination.ligne();
