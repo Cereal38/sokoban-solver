@@ -386,7 +386,8 @@ class IASolver extends IA {
 
     // Toutes les caisses accessibles à l'instant t
     Point[] caissesAccessibles;
-    Point[] position;
+    // Toutes les cases accessibles à l'instant t
+    Point[] positions;
     int taille, nbEleme;
     int nbCaissesDeplacables = 0;
 
@@ -406,7 +407,7 @@ class IASolver extends IA {
 
       // On met à jour les cases accessibles par le joueur
       if (niveauInner.estOccupable(p.ligne(), p.colonne())) {
-        position[nbEleme] = new Point(p.colonne(), p.ligne());
+        positions[nbEleme] = new Point(p.colonne(), p.ligne());
         nbEleme++;
         // On met à jour les caisses accessibles par le joueur
       } else {
@@ -423,16 +424,16 @@ class IASolver extends IA {
 
     public void ajouterCasesAccessibles(Niveau niveauInner, Position joueur) {
       // On clear le tableau
-      position = new Point[taille];
+      positions = new Point[taille];
       // On ajoute la position du pousseur
-      position[0] = new Position(joueur.x, joueur.y);
+      positions[0] = new Position(joueur.x, joueur.y);
       nbEleme = 1;
       int i = 0;
       while (i < nbEleme) {
 
         // On regarde chaque case adjacente si elle n'est pas déjà dans le tableau et si
         // elle est accessible, si oui on l'ajoute
-        Position p = new Position(position[i].x, position[i].y);
+        Position p = new Position(positions[i].x, positions[i].y);
         verifieEtAjoute(niveauInner, p.haut());
         verifieEtAjoute(niveauInner, p.bas());
         verifieEtAjoute(niveauInner, p.gauche());
@@ -445,7 +446,7 @@ class IASolver extends IA {
     // Renvoie l'indice de l'élément si il existe, -1 sinon
     public int existe(Position p) {
       for (int i = 0; i < nbEleme; i++) {
-        if (position[i].x == p.colonne() && position[i].y == p.ligne())
+        if (positions[i].x == p.colonne() && positions[i].y == p.ligne())
           return i;
       }
       return EXISTE_PAS;
