@@ -447,23 +447,6 @@ class IASolver extends IA {
       joueurL = solution.mouvements[i].joueur.ligne();
     }
 
-    // for (int i = 0; i < cases.nbEleme - 1; i++) {
-    // Coup coup = new Coup();
-    // coup.deplacementPousseur(cases.position[i].ligne(), cases.position[i].colonne(),
-    // cases.position[i + 1].ligne(),
-    // cases.position[i + 1].colonne());
-    // System.out.println("Position " + i + " : " + cases.position[i].ligne() + " " +
-    // cases.position[i].colonne());
-    // // coup = niveau.deplace(cases.position[i].ligne() - cases.position[i + 1].ligne(),
-    // // cases.position[i].colonne() - cases.position[i + 1].colonne());
-    // resultat.insereQueue(coup);
-    // }
-    // Coup coup = new Coup();
-    // coup.deplacementPousseur(cases.position[cases.nbEleme - 1].ligne(),
-    // cases.position[cases.nbEleme - 1].colonne(),
-    // cases.position[0].ligne(),
-    // cases.position[0].colonne());
-    // resultat.insereQueue(coup);
     return resultat;
   }
 }
