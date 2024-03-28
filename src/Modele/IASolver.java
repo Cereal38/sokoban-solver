@@ -9,6 +9,37 @@ import java.awt.Point;
 import Global.Configuration;
 import Structures.Sequence;
 
+class Position extends Point {
+  Position(int x, int y) {
+    super(x, y);
+  }
+
+  Position haut() {
+    return new Position(x, y - 1);
+  }
+
+  Position bas() {
+    return new Position(x, y + 1);
+  }
+
+  Position gauche() {
+    return new Position(x - 1, y);
+  }
+
+  Position droite() {
+    return new Position(x + 1, y);
+  }
+
+  int ligne() {
+    return y;
+  }
+
+  int colonne() {
+    return x;
+  }
+
+}
+
 class IASolver extends IA {
   private static int EXISTE_PAS = -1;
 
