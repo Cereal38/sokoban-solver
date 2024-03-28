@@ -230,8 +230,18 @@ class IASolver extends IA {
         // On récupère les mouvements possibles
         CaissesDeplacables caisses = new CaissesDeplacables(cases.nbCaissesDeplacables);
         caisses.trouverMouvementsCaisses(niveauCourant, cases);
-        if (indexParcours % 1000 == 0)
-          System.out.println("Etat " + indexParcours);
+
+        if (indexParcours % 1 == 0) {
+          System.out.println("Etat " + indexParcours + " | Pere : " + etatCourant.pere);
+          System.out.println("Mouvements caisses possible: ");
+          for (int i = 0; i < caisses.nbMouvements; i++) {
+            System.out.println("Mouvement " + i + " : " + caisses.mouvementsPossibles[i][0].ligne() + " "
+                + caisses.mouvementsPossibles[i][0].colonne() + " | " + caisses.mouvementsPossibles[i][1].ligne() + " "
+                + caisses.mouvementsPossibles[i][1].colonne() + " | " + caisses.mouvementsPossibles[i][2].ligne() + " "
+                + caisses.mouvementsPossibles[i][2].colonne());
+          }
+          niveauCourant.affiche();
+        }
         // On ajoute tout les mouvements de caisse possibles au tableau
         for (int i = 0; i < caisses.nbMouvements; i++) {
           // On récupère la nouvelle position du joueur (position actuelle de la caisse)
@@ -302,12 +312,12 @@ class IASolver extends IA {
         // Si la case est accessible, on regarde si la case à l'opposée est libre (ou un
         // but)
         // Si vrai on ajoute le mouvement
-        int caisseX = casesAccessibles.caissesAccessibles[i].colonne();
-        int caisseY = casesAccessibles.caissesAccessibles[i].ligne();
-        Position positionCaisse = new Position(caisseX, caisseY);
+        int caisseC = casesAccessibles.caissesAccessibles[i].colonne();
+        int caisseL = casesAccessibles.caissesAccessibles[i].ligne();
+        Position positionCaisse = new Position(caisseC, caisseL);
         // On regarde si la case en haut est accessible
         if (casesAccessibles.existe(positionCaisse.haut()) != EXISTE_PAS) {
-          if (niveau.estOccupable(caisseY + 1, caisseX)) {
+          if (niveau.peutAccepterCaisse(caisseL + 1, caisseC)) {
             // Poisition du joueur requise pour déplacer la caisse
             mouvementsPossibles[nbMouvements][0] = positionCaisse.haut();
             // Position de la caisse
@@ -319,7 +329,7 @@ class IASolver extends IA {
         }
         // Pareil pour le bas
         if (casesAccessibles.existe(positionCaisse.bas()) != EXISTE_PAS) {
-          if (niveau.estOccupable(caisseY - 1, caisseX)) {
+          if (niveau.peutAccepterCaisse(caisseL - 1, caisseC)) {
             mouvementsPossibles[nbMouvements][0] = positionCaisse.bas();
             mouvementsPossibles[nbMouvements][1] = positionCaisse;
             mouvementsPossibles[nbMouvements][2] = positionCaisse.haut();
@@ -328,7 +338,7 @@ class IASolver extends IA {
         }
         // Pareil pour la gauche
         if (casesAccessibles.existe(positionCaisse.gauche()) != EXISTE_PAS) {
-          if (niveau.estOccupable(caisseY, caisseX + 1)) {
+          if (niveau.peutAccepterCaisse(caisseL, caisseC + 1)) {
             mouvementsPossibles[nbMouvements][0] = positionCaisse.gauche();
             mouvementsPossibles[nbMouvements][1] = positionCaisse;
             mouvementsPossibles[nbMouvements][2] = positionCaisse.droite();
@@ -337,7 +347,7 @@ class IASolver extends IA {
         }
         // Pareil pour la droite
         if (casesAccessibles.existe(positionCaisse.droite()) != EXISTE_PAS) {
-          if (niveau.estOccupable(caisseY, caisseX - 1)) {
+          if (niveau.peutAccepterCaisse(caisseL, caisseC - 1)) {
             mouvementsPossibles[nbMouvements][0] = positionCaisse.droite();
             mouvementsPossibles[nbMouvements][1] = positionCaisse;
             mouvementsPossibles[nbMouvements][2] = positionCaisse.gauche();

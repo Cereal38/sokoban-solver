@@ -11,28 +11,6 @@ Author: Aymeric du Peloux
 This file downloaded from the Sokoban levels page at
 http://sneezingtiger.com/sokoban/levels.html
 
-Level 2
-'MINICOSMOS 02'
-  #####
-###   #
-# $ # ##
-# #  . #
-#    # #
-##$#.  #
- #@  ###
- #####
-
-Level 3
-'MINICOSMOS 03'
-  #####
-###   #
-# $ # ##
-# #  . #
-# .  # #
-##$#.$ #
- #@  ###
- #####
-
 Level 4
 'MINICOSMOS 04'
     ####
