@@ -385,7 +385,7 @@ class IASolver extends IA {
   class CasesAccessibles {
 
     // Toutes les caisses accessibles à l'instant t
-    Point[] caissesAccessibles;
+    Position[] caissesAccessibles;
     // Toutes les cases accessibles à l'instant t
     Position[] positions;
     int taille, nbEleme;
@@ -395,7 +395,7 @@ class IASolver extends IA {
     public CasesAccessibles(Niveau niveauInner, Position joueur) {
       taille = niveauInner.lignes() * niveauInner.colonnes();
       nbEleme = 1;
-      caissesAccessibles = new Point[niveauInner.nbButs];
+      caissesAccessibles = new Position[niveauInner.nbButs];
       ajouterCasesAccessibles(niveauInner, joueur);
     }
 
@@ -416,7 +416,7 @@ class IASolver extends IA {
             if (caissesAccessibles[i].x == p.colonne() && caissesAccessibles[i].y == p.ligne())
               return;
           }
-          caissesAccessibles[nbCaissesDeplacables] = new Point(p.colonne(), p.ligne());
+          caissesAccessibles[nbCaissesDeplacables] = p;
           nbCaissesDeplacables++;
         }
       }
