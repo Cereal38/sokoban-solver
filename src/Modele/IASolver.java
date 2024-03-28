@@ -10,6 +10,7 @@ import Global.Configuration;
 import Structures.Sequence;
 
 class IASolver extends IA {
+  private static int EXISTE_PAS = -1;
 
   class EtatDuNiveau {
     Point positionApresDeplacement; // Position du pousseur après le déplacement de la caisse
@@ -53,9 +54,10 @@ class IASolver extends IA {
       index = 0;
       // Ajoute l'état initial
       ajouteEtat(
-          new EtatDuNiveau(new Point(niveau.lignePousseur(), niveau.colonnePousseur()), new Point(-1, -1),
+          new EtatDuNiveau(new Point(niveau.lignePousseur(), niveau.colonnePousseur()),
+              new Point(EXISTE_PAS, EXISTE_PAS),
               positionCaisses(niveau),
-              -1));
+              EXISTE_PAS));
     }
 
     // Renvoie la position des buts dans le niveau
@@ -187,7 +189,7 @@ class IASolver extends IA {
       int indexTemp = index - 1;
       int indexChemin = 0;
       // On remonte le chemin
-      while (etats[indexTemp].pere != -1) {
+      while (etats[indexTemp].pere != EXISTE_PAS) {
         chemin[indexChemin] = indexTemp;
         indexTemp = etats[indexTemp].pere;
         indexChemin++;
@@ -300,7 +302,7 @@ class IASolver extends IA {
         // Si vrai on ajoute le mouvement
         int caisseX = casesAccessibles.caissesAccessibles[i].x;
         int caisseY = casesAccessibles.caissesAccessibles[i].y;
-        if (casesAccessibles.existe(caisseY - 1, caisseX) != -1) {
+        if (casesAccessibles.existe(caisseY - 1, caisseX) != EXISTE_PAS) {
           if (niveau.estOccupable(caisseY + 1, caisseX)) {
             // Poisition du joueur requise pour déplacer la caisse
             mouvementsPossibles[nbMouvements][0] = new Point(caisseX, caisseY - 1);
@@ -312,7 +314,7 @@ class IASolver extends IA {
           }
         }
         // Pareil pour le bas
-        if (casesAccessibles.existe(caisseY + 1, caisseX) != -1) {
+        if (casesAccessibles.existe(caisseY + 1, caisseX) != EXISTE_PAS) {
           if (niveau.estOccupable(caisseY - 1, caisseX)) {
             mouvementsPossibles[nbMouvements][0] = new Point(caisseX, caisseY + 1);
             mouvementsPossibles[nbMouvements][1] = new Point(caisseX, caisseY);
@@ -321,7 +323,7 @@ class IASolver extends IA {
           }
         }
         // Pareil pour la droite
-        if (casesAccessibles.existe(caisseY, caisseX - 1) != -1) {
+        if (casesAccessibles.existe(caisseY, caisseX - 1) != EXISTE_PAS) {
           if (niveau.estOccupable(caisseY, caisseX + 1)) {
             mouvementsPossibles[nbMouvements][0] = new Point(caisseX - 1, caisseY);
             mouvementsPossibles[nbMouvements][1] = new Point(caisseX, caisseY);
@@ -330,7 +332,7 @@ class IASolver extends IA {
           }
         }
         // Pareil pour la gauche
-        if (casesAccessibles.existe(caisseY, caisseX + 1) != -1) {
+        if (casesAccessibles.existe(caisseY, caisseX + 1) != EXISTE_PAS) {
           if (niveau.estOccupable(caisseY, caisseX - 1)) {
             mouvementsPossibles[nbMouvements][0] = new Point(caisseX + 1, caisseY);
             mouvementsPossibles[nbMouvements][1] = new Point(caisseX, caisseY);
@@ -344,6 +346,7 @@ class IASolver extends IA {
 
   // Cases accessibles par le pousseur
   class CasesAccessibles {
+
     // Toutes les caisses accessibles à l'instant t
     Point[] caissesAccessibles;
     Point[] position;
@@ -359,7 +362,7 @@ class IASolver extends IA {
     }
 
     private void checkAndAddPosition(Niveau niveauInner, int l, int c) {
-      if (existe(l, c) == -1) {
+      if (existe(l, c) == EXISTE_PAS) {
         // On met à jour les cases accessibles par le joueur
         if (niveauInner.estOccupable(l, c)) {
           position[nbEleme] = new Point(c, l);
@@ -405,7 +408,7 @@ class IASolver extends IA {
         if (position[i].x == c && position[i].y == l)
           return i;
       }
-      return -1;
+      return EXISTE_PAS;
     }
 
   }
