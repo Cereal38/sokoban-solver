@@ -335,7 +335,11 @@ class IASolver extends IA {
         // Si vrai on ajoute le mouvement
         int caisseX = casesAccessibles.caissesAccessibles[i].x;
         int caisseY = casesAccessibles.caissesAccessibles[i].y;
-        if (casesAccessibles.existe(caisseY - 1, caisseX) != EXISTE_PAS) {
+        Position caisseHaut = new Position(caisseX, caisseY).haut();
+        Position caisseBas = new Position(caisseX, caisseY).bas();
+        Position caisseGauche = new Position(caisseX, caisseY).gauche();
+        Position caisseDroite = new Position(caisseX, caisseY).droite();
+        if (casesAccessibles.existe(caisseHaut) != EXISTE_PAS) {
           if (niveau.estOccupable(caisseY + 1, caisseX)) {
             // Poisition du joueur requise pour déplacer la caisse
             mouvementsPossibles[nbMouvements][0] = new Point(caisseX, caisseY - 1);
@@ -347,7 +351,7 @@ class IASolver extends IA {
           }
         }
         // Pareil pour le bas
-        if (casesAccessibles.existe(caisseY + 1, caisseX) != EXISTE_PAS) {
+        if (casesAccessibles.existe(caisseBas) != EXISTE_PAS) {
           if (niveau.estOccupable(caisseY - 1, caisseX)) {
             mouvementsPossibles[nbMouvements][0] = new Point(caisseX, caisseY + 1);
             mouvementsPossibles[nbMouvements][1] = new Point(caisseX, caisseY);
@@ -356,7 +360,7 @@ class IASolver extends IA {
           }
         }
         // Pareil pour la droite
-        if (casesAccessibles.existe(caisseY, caisseX - 1) != EXISTE_PAS) {
+        if (casesAccessibles.existe(caisseGauche) != EXISTE_PAS) {
           if (niveau.estOccupable(caisseY, caisseX + 1)) {
             mouvementsPossibles[nbMouvements][0] = new Point(caisseX - 1, caisseY);
             mouvementsPossibles[nbMouvements][1] = new Point(caisseX, caisseY);
@@ -365,7 +369,7 @@ class IASolver extends IA {
           }
         }
         // Pareil pour la gauche
-        if (casesAccessibles.existe(caisseY, caisseX + 1) != EXISTE_PAS) {
+        if (casesAccessibles.existe(caisseDroite) != EXISTE_PAS) {
           if (niveau.estOccupable(caisseY, caisseX - 1)) {
             mouvementsPossibles[nbMouvements][0] = new Point(caisseX + 1, caisseY);
             mouvementsPossibles[nbMouvements][1] = new Point(caisseX, caisseY);
@@ -396,7 +400,7 @@ class IASolver extends IA {
 
     private void checkAndAddPosition(Niveau niveauInner, int l, int c) {
       // On vérifie si la case existe
-      if (existe(l, c) != EXISTE_PAS) {
+      if (existe(new Position(c, l)) != EXISTE_PAS) {
         return;
       }
 
@@ -439,9 +443,9 @@ class IASolver extends IA {
     }
 
     // Renvoie l'indice de l'élément si il existe, -1 sinon
-    public int existe(int l, int c) {
+    public int existe(Position p) {
       for (int i = 0; i < nbEleme; i++) {
-        if (position[i].x == c && position[i].y == l)
+        if (position[i].x == p.colonne() && position[i].y == p.ligne())
           return i;
       }
       return EXISTE_PAS;
