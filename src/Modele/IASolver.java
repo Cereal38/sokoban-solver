@@ -214,8 +214,9 @@ class IASolver extends IA {
 
     public void resoudre() {
       indexParcours = 0;
+      boolean solutionTrouvee = false;
       // Tant qu'il reste des élements dans la liste
-      while (etats[indexParcours] != null) {
+      while (etats[indexParcours] != null && !solutionTrouvee) {
         // On récupère l'état de l'indice actuel
         EtatDuNiveau etatCourant = etats[indexParcours];
         // On récupère les infos
@@ -264,6 +265,7 @@ class IASolver extends IA {
             // On vérifie si le niveau est terminé
             if (niveauTerminee(posCaissesNew)) {
               System.out.println("Niveau terminé");
+              solutionTrouvee = true;
               break;
             }
           }
