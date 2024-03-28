@@ -362,21 +362,24 @@ class IASolver extends IA {
     }
 
     private void checkAndAddPosition(Niveau niveauInner, int l, int c) {
-      if (existe(l, c) == EXISTE_PAS) {
-        // On met à jour les cases accessibles par le joueur
-        if (niveauInner.estOccupable(l, c)) {
-          position[nbEleme] = new Point(c, l);
-          nbEleme++;
-          // On met à jour les caisses accessibles par le joueur
-        } else {
-          if (niveauInner.aCaisse(l, c)) {
-            for (int i = 0; i < nbCaissesDeplacables; i++) {
-              if (caissesAccessibles[i].x == c && caissesAccessibles[i].y == l)
-                return;
-            }
-            caissesAccessibles[nbCaissesDeplacables] = new Point(c, l);
-            nbCaissesDeplacables++;
+      // On vérifie si la case existe
+      if (existe(l, c) != EXISTE_PAS) {
+        return;
+      }
+
+      // On met à jour les cases accessibles par le joueur
+      if (niveauInner.estOccupable(l, c)) {
+        position[nbEleme] = new Point(c, l);
+        nbEleme++;
+        // On met à jour les caisses accessibles par le joueur
+      } else {
+        if (niveauInner.aCaisse(l, c)) {
+          for (int i = 0; i < nbCaissesDeplacables; i++) {
+            if (caissesAccessibles[i].x == c && caissesAccessibles[i].y == l)
+              return;
           }
+          caissesAccessibles[nbCaissesDeplacables] = new Point(c, l);
+          nbCaissesDeplacables++;
         }
       }
     }
