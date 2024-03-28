@@ -2,9 +2,9 @@
 // X = Colonne
 // Y = Ligne
 
-// TODO: Galere au niveau 24 car dejavu parcours tout le tableau
-
 package Modele;
+
+import java.util.HashMap;
 
 import Global.Configuration;
 import Structures.Position;
@@ -46,6 +46,7 @@ class IASolver extends IA {
   }
 
   class Solution {
+    private HashMap<String, Boolean> etatsRencontres = new HashMap<>();
     EtatDuNiveau[] etats; // TODO: Move it to resoudre() (Avoir useless ram usage)
     MouvementJoueur[] mouvements;
     Position[] posButs;
@@ -138,23 +139,20 @@ class IASolver extends IA {
       return niveauAvecCaisseAvecJoueur;
     }
 
-    // Renvoie vrai si la configuration existe déjà dans le tableau
+    // Genere une clé unique pour chaque configuration
+    private String genererCle(Position joueur, Position[] posCaisses) {
+      String cle = joueur.toString();
+      for (int i = 0; i < posCaisses.length; i++) {
+        cle += posCaisses[i].toString();
+      }
+      return cle;
+    }
+
+    // Renvoie vrai si la configuration existe déjà dans la table de hashage
     private boolean dejaVu(Position joueur, Position[] posCaisses, int pere) {
-      for (int i = 0; i < indexAjout; i++) {
-        // Vérifie si la position après le déplacement du joueur sont les mêmes
-        if (etats[i].positionApresDeplacement.equals(joueur)) {
-          boolean caissesEgales = true;
-          // Vérifie si les positions des caisses sont les mêmes
-          for (int j = 0; j < posCaisses.length; j++) {
-            if (!etats[i].posCaisses[j].equals(posCaisses[j])) {
-              caissesEgales = false;
-              break;
-            }
-          }
-          if (caissesEgales) {
-            return true;
-          }
-        }
+      String cle = genererCle(joueur, posCaisses);
+      if (etatsRencontres.containsKey(cle)) {
+        return true;
       }
       return false;
     }
@@ -177,7 +175,9 @@ class IASolver extends IA {
 
     private void ajouteEtat(EtatDuNiveau etat) {
       if (!dejaVu(etat.positionApresDeplacement, etat.posCaisses, etat.pere)) {
+        // Ajoute l'état au tableau des états et à la table de hashage
         etats[indexAjout] = etat;
+        etatsRencontres.put(genererCle(etat.positionApresDeplacement, etat.posCaisses), true);
         indexAjout++;
       }
     }
