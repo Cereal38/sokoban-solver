@@ -10,8 +10,10 @@ import Global.Configuration;
 import Structures.Sequence;
 
 class Position extends Point {
-  Position(int x, int y) {
-    super(x, y);
+  // Takes column (x) and line (y) as parameters
+
+  Position(int column, int line) {
+    super(column, line);
   }
 
   Position haut() {
