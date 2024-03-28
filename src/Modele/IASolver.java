@@ -47,7 +47,6 @@ class IASolver extends IA {
 
   class Solution {
     private HashMap<String, Boolean> etatsRencontres = new HashMap<>();
-    EtatDuNiveau[] etats; // TODO: Move it to resoudre() (Avoir useless ram usage)
     MouvementJoueur[] mouvements;
     Position[] posButs;
     Niveau niveauSansCaisse;
@@ -57,16 +56,9 @@ class IASolver extends IA {
     Solution() {
       // Ajoute la position des buts
       posButs = positionsButs(niveau);
-      etats = new EtatDuNiveau[10000000];
       niveauSansCaisse = copieNiveauSansCaisseSansJoueur(niveau);
       indexAjout = 0;
       indexParcours = 0;
-      // Ajoute l'état initial
-      ajouteEtat(
-          new EtatDuNiveau(new Position(niveau.colonnePousseur(), niveau.lignePousseur()),
-              new Position(EXISTE_PAS, EXISTE_PAS),
-              positionCaisses(niveau),
-              EXISTE_PAS));
     }
 
     // Renvoie la position des buts dans le niveau
@@ -173,7 +165,7 @@ class IASolver extends IA {
       return false;
     }
 
-    private void ajouteEtat(EtatDuNiveau etat) {
+    private void ajouteEtat(EtatDuNiveau[] etats, EtatDuNiveau etat) {
       if (!dejaVu(etat.positionApresDeplacement, etat.posCaisses, etat.pere)) {
         // Ajoute l'état au tableau des états et à la table de hashage
         etats[indexAjout] = etat;
@@ -182,7 +174,7 @@ class IASolver extends IA {
       }
     }
 
-    private void extraireChemin() {
+    private void extraireChemin(EtatDuNiveau[] etats) {
       // Cas où l'on n'a pas trouvé de solution
       if (!niveauTerminee(etats[indexAjout - 1].posCaisses)) {
         System.out.println("Solution non trouvé");
@@ -220,6 +212,15 @@ class IASolver extends IA {
     }
 
     public void resoudre() {
+      EtatDuNiveau[] etats = new EtatDuNiveau[1000000];
+      // Ajoute l'état initial
+      ajouteEtat(
+          etats,
+          new EtatDuNiveau(new Position(niveau.colonnePousseur(), niveau.lignePousseur()),
+              new Position(EXISTE_PAS, EXISTE_PAS),
+              positionCaisses(niveau),
+              EXISTE_PAS));
+
       indexParcours = 0;
       boolean solutionTrouvee = false;
       // Tant qu'il reste des élements dans la liste
@@ -269,7 +270,7 @@ class IASolver extends IA {
           // if (!mouvementBloquant(caisses.mouvementsPossibles[i][2])) {
           if (!mouvementBloquant(caisses.mouvementsPossibles[i][1])) {
             // On ajoute l'état
-            ajouteEtat(
+            ajouteEtat(etats,
                 new EtatDuNiveau(new Position(posCNew, posLNew), new Position(posCAncienne, posLAncienne),
                     posCaissesNew,
                     indexParcours));
@@ -285,7 +286,7 @@ class IASolver extends IA {
         indexParcours++;
       }
       // On construit le bon chemin
-      extraireChemin();
+      extraireChemin(etats);
     }
 
   }
