@@ -50,7 +50,7 @@ class IASolver extends IA {
     Solution() {
       // Ajoute la position des buts
       posButs = positionsButs(niveau);
-      etats = new EtatDuNiveau[100000];
+      etats = new EtatDuNiveau[10000000];
       niveauSansCaisse = copieNiveauSansCaisseSansJoueur(niveau);
       indexAjout = 0;
       indexParcours = 0;
@@ -132,39 +132,19 @@ class IASolver extends IA {
       return niveauAvecCaisseAvecJoueur;
     }
 
-    // Renvoie vrai si la configuration existe déjà dansle tableau
-    private boolean dejaVu(Position joueur, Position[] posCaisses) {
-      // On parcours les états déjà visités du tableau
-      for (int i = 0; i < indexAjout; i++) {
-        // On vérifie si le joueur est à la même position
-        if (joueur.equals(etats[i].positionApresDeplacement)) {
-          // On vérifie si les caisses sont à la même position
-          boolean caissesIdentiques = true;
-          for (int j = 0; j < posCaisses.length; j++) {
-            if (!posCaisses[j].equals(etats[i].posCaisses[j])) {
-              caissesIdentiques = false;
-              break;
-            }
-          }
-          if (caissesIdentiques) {
-            System.out
-                .println("Déjà vu pour: JoueurX: " + joueur.colonne() + " JoueurY: " + joueur.ligne() + " | Caisses: ");
-            for (int j = 0; j < posCaisses.length; j++) {
-              System.out.println("\tCaisseX: " + posCaisses[j].colonne() + " CaisseY: " + posCaisses[j].ligne());
-            }
-            System.out.println("Avec Etat " + i);
-            System.out.println("JoueurX: " + etats[i].positionApresDeplacement.colonne() + " JoueurY: "
-                + etats[i].positionApresDeplacement.ligne() + " | Caisses: ");
-            for (int j = 0; j < posCaisses.length; j++) {
-              System.out.println("\tCaisseX: " + etats[i].posCaisses[j].colonne() + " CaisseY: "
-                  + etats[i].posCaisses[j].ligne());
-            }
-            System.out.println("=======================================");
-            return true;
-          }
+    // Renvoie vrai si la configuration existe déjà dans les parents de l'état
+    // actuel
+    private boolean dejaVu(Position joueur, Position[] posCaisses, int pere) {
+      // On parcours les parents
+      while (pere != EXISTE_PAS) {
+        // On récupère l'état du parent
+        EtatDuNiveau etat = etats[pere];
+        // On vérifie si la configuration est la même
+        if (etat.positionApresDeplacement.equals(joueur) && etat.posCaisses.equals(posCaisses)) {
+          return true;
         }
+        pere = etat.pere;
       }
-
       return false;
     }
 
@@ -192,7 +172,7 @@ class IASolver extends IA {
     }
 
     private void ajouteEtat(EtatDuNiveau etat) {
-      if (!dejaVu(etat.positionApresDeplacement, etat.posCaisses)) {
+      if (!dejaVu(etat.positionApresDeplacement, etat.posCaisses, etat.pere)) {
         etats[indexAjout] = etat;
         indexAjout++;
       }
