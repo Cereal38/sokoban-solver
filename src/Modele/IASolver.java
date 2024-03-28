@@ -419,30 +419,6 @@ class IASolver extends IA {
       }
     }
 
-    public boolean haut(int i) {
-      return estAccessible(position[i].x - 1, position[i].y);
-    }
-
-    public boolean bas(int i) {
-      return estAccessible(position[i].x + 1, position[i].y);
-    }
-
-    public boolean gauche(int i) {
-      return estAccessible(position[i].x, position[i].y - 1);
-    }
-
-    public boolean droite(int i) {
-      return estAccessible(position[i].x, position[i].y + 1);
-    }
-
-    // Indique si la case demandé est accessible
-    private boolean estAccessible(int l, int c) {
-      if (l < 0 || l >= niveau.lignes() || c < 0 || c >= niveau.colonnes() || !niveau.estOccupable(l, c)) {
-        return false;
-      }
-      return true;
-    }
-
   }
 
   @Override
