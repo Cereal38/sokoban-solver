@@ -2,6 +2,8 @@
 // X = Colonne
 // Y = Ligne
 
+// TODO: Galere au niveau 24 car dejavu parcours tout le tableau
+
 package Modele;
 
 import Global.Configuration;
@@ -136,18 +138,23 @@ class IASolver extends IA {
       return niveauAvecCaisseAvecJoueur;
     }
 
-    // Renvoie vrai si la configuration existe déjà dans les parents de l'état
-    // actuel
+    // Renvoie vrai si la configuration existe déjà dans le tableau
     private boolean dejaVu(Position joueur, Position[] posCaisses, int pere) {
-      // On parcours les parents
-      while (pere != EXISTE_PAS) {
-        // On récupère l'état du parent
-        EtatDuNiveau etat = etats[pere];
-        // On vérifie si la configuration est la même
-        if (etat.positionApresDeplacement.equals(joueur) && etat.posCaisses.equals(posCaisses)) {
-          return true;
+      for (int i = 0; i < indexAjout; i++) {
+        // Vérifie si la position après le déplacement du joueur sont les mêmes
+        if (etats[i].positionApresDeplacement.equals(joueur)) {
+          boolean caissesEgales = true;
+          // Vérifie si les positions des caisses sont les mêmes
+          for (int j = 0; j < posCaisses.length; j++) {
+            if (!etats[i].posCaisses[j].equals(posCaisses[j])) {
+              caissesEgales = false;
+              break;
+            }
+          }
+          if (caissesEgales) {
+            return true;
+          }
         }
-        pere = etat.pere;
       }
       return false;
     }
