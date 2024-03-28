@@ -53,10 +53,19 @@ class IASolver extends IA {
       index = 0;
       // Ajoute l'état initial
       ajouteEtat(
-          new EtatDuNiveau(new Position(niveau.lignePousseur(), niveau.colonnePousseur()),
+          new EtatDuNiveau(new Position(niveau.colonnePousseur(), niveau.lignePousseur()),
               new Position(EXISTE_PAS, EXISTE_PAS),
               positionCaisses(niveau),
               EXISTE_PAS));
+    }
+
+    // Remove everything
+    public void wipe() {
+      etats = null;
+      mouvements = null;
+      posButs = null;
+      niveauSansCaisse = null;
+      index = 0;
     }
 
     // Renvoie la position des buts dans le niveau
