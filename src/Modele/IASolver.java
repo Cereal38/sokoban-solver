@@ -259,7 +259,7 @@ class IASolver extends IA {
         // On récupère le niveau actuel
         Niveau niveauCourant = copieNiveauAvecCaisseAvecJoueur(niveauSansCaisse, posCaisses, posL, posC);
         // On récupère les cases accessibles
-        CasesAccessibles cases = new CasesAccessibles(niveauCourant, new Point(posC, posL));
+        CasesAccessibles cases = new CasesAccessibles(niveauCourant, new Position(posC, posL));
         // On récupère les mouvements possibles
         CaissesDeplacables caisses = new CaissesDeplacables(cases.nbCaissesDeplacables);
         caisses.trouverMouvementsCaisses(niveauCourant, cases);
@@ -391,11 +391,11 @@ class IASolver extends IA {
     int nbCaissesDeplacables = 0;
 
     // On récupère les cases et caisses accessibles par le joueur depuis sa position
-    public CasesAccessibles(Niveau niveauInner, Point pousseur) {
+    public CasesAccessibles(Niveau niveauInner, Position joueur) {
       taille = niveauInner.lignes() * niveauInner.colonnes();
       nbEleme = 1;
       caissesAccessibles = new Point[niveauInner.nbButs];
-      ajouterCasesAccessibles(niveauInner, new Position(pousseur.x, pousseur.y));
+      ajouterCasesAccessibles(niveauInner, joueur);
     }
 
     private void verifieEtAjoute(Niveau niveauInner, Position p) {
