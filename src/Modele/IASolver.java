@@ -248,7 +248,9 @@ class IASolver extends IA {
 
           // On ajoute des heuristiques
           // On vérifie si le mouvement est bloquant
-          if (!mouvementBloquant(caisses.mouvementsPossibles[i][2])) {
+          // TODO: POURQUOI 1 MARCHE ET PAS 2 ???
+          // if (!mouvementBloquant(caisses.mouvementsPossibles[i][2])) {
+          if (!mouvementBloquant(caisses.mouvementsPossibles[i][1])) {
             // On ajoute l'état
             ajouteEtat(
                 new EtatDuNiveau(new Position(posCNew, posLNew), new Position(posCAncienne, posLAncienne),
