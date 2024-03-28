@@ -398,7 +398,7 @@ class IASolver extends IA {
       ajouterCasesAccessibles(niveauInner, new Position(pousseur.x, pousseur.y));
     }
 
-    private void checkAndAddPosition(Niveau niveauInner, Position p) {
+    private void verifieEtAjoute(Niveau niveauInner, Position p) {
       // On vérifie si la case existe
       if (existe(p) != EXISTE_PAS) {
         return;
@@ -433,10 +433,10 @@ class IASolver extends IA {
         // On regarde chaque case adjacente si elle n'est pas déjà dans le tableau et si
         // elle est accessible, si oui on l'ajoute
         Position p = new Position(position[i].x, position[i].y);
-        checkAndAddPosition(niveauInner, p.haut());
-        checkAndAddPosition(niveauInner, p.bas());
-        checkAndAddPosition(niveauInner, p.gauche());
-        checkAndAddPosition(niveauInner, p.droite());
+        verifieEtAjoute(niveauInner, p.haut());
+        verifieEtAjoute(niveauInner, p.bas());
+        verifieEtAjoute(niveauInner, p.gauche());
+        verifieEtAjoute(niveauInner, p.droite());
 
         i++;
       }
