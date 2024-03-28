@@ -46,12 +46,12 @@ class IASolver extends IA {
   private static int EXISTE_PAS = -1;
 
   class EtatDuNiveau {
-    Point positionApresDeplacement; // Position du pousseur après le déplacement de la caisse
-    Point positionAvantDeplacement; // Position du pousseur avant le déplacement de la caisse
+    Position positionApresDeplacement; // Position du pousseur après le déplacement de la caisse
+    Position positionAvantDeplacement; // Position du pousseur avant le déplacement de la caisse
     int[][] posCaisses; // Position des caisses
     int pere; // Indice du père dans la liste des états
 
-    EtatDuNiveau(Point positionApresDeplacement, Point positionAvantDeplacement, int[][] posCaisses, int pere) {
+    EtatDuNiveau(Position positionApresDeplacement, Position positionAvantDeplacement, int[][] posCaisses, int pere) {
       this.positionApresDeplacement = positionApresDeplacement;
       this.positionAvantDeplacement = positionAvantDeplacement;
       this.posCaisses = posCaisses;
@@ -87,8 +87,8 @@ class IASolver extends IA {
       index = 0;
       // Ajoute l'état initial
       ajouteEtat(
-          new EtatDuNiveau(new Point(niveau.lignePousseur(), niveau.colonnePousseur()),
-              new Point(EXISTE_PAS, EXISTE_PAS),
+          new EtatDuNiveau(new Position(niveau.lignePousseur(), niveau.colonnePousseur()),
+              new Position(EXISTE_PAS, EXISTE_PAS),
               positionCaisses(niveau),
               EXISTE_PAS));
     }
@@ -294,7 +294,8 @@ class IASolver extends IA {
           if (!mouvementBloquant(caisses.mouvementsPossibles[i][2])) {
             // On ajoute l'état
             ajouteEtat(
-                new EtatDuNiveau(new Point(posCNew, posLNew), new Point(posCAncienne, posLAncienne), posCaissesNew,
+                new EtatDuNiveau(new Position(posCNew, posLNew), new Position(posCAncienne, posLAncienne),
+                    posCaissesNew,
                     indexTemp));
             // On vérifie si le niveau est terminé
             if (niveauTerminee(posCaissesNew)) {
