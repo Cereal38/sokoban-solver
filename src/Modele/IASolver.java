@@ -17,14 +17,17 @@ class IASolver extends IA {
     Position positionApresDeplacement; // Position du pousseur après le déplacement de la caisse
     Position positionAvantDeplacement; // Position du pousseur avant le déplacement de la caisse
     Position[] posCaisses; // Position des caisses
-    int pere; // Indice du père dans la liste des états
+    EtatDuNiveau pere; // Etat pere
+    EtatDuNiveau precedent; // Etat précédent
+    EtatDuNiveau suivant; // Etat suivant
 
-    EtatDuNiveau(Position positionApresDeplacement, Position positionAvantDeplacement, Position[] posCaisses,
-        int pere) {
+    EtatDuNiveau(Position positionApresDeplacement, Position positionAvantDeplacement, Position[] posCaisses) {
       this.positionApresDeplacement = positionApresDeplacement;
       this.positionAvantDeplacement = positionAvantDeplacement;
       this.posCaisses = posCaisses;
-      this.pere = pere;
+      this.pere = null;
+      this.precedent = null;
+      this.suivant = null;
     }
   }
 
@@ -50,15 +53,19 @@ class IASolver extends IA {
     MouvementJoueur[] mouvements;
     Position[] posButs;
     Niveau niveauSansCaisse;
-    int indexAjout = 0; // Index auquel on ajoute les états
-    int indexParcours = 0; // Index qui indique l'état actuel
+    EtatDuNiveau etatRacine;
+    EtatDuNiveau etatQueue;
+    int longueur;
 
     Solution() {
       // Ajoute la position des buts
       posButs = positionsButs(niveau);
       niveauSansCaisse = copieNiveauSansCaisseSansJoueur(niveau);
-      indexAjout = 0;
-      indexParcours = 0;
+      // Ajoute l'état initial
+      etatRacine = new EtatDuNiveau(new Position(niveau.colonnePousseur(), niveau.lignePousseur()),
+          new Position(EXISTE_PAS, EXISTE_PAS), positionCaisses(niveau));
+      etatQueue = etatRacine;
+      longueur = 0;
     }
 
     // Renvoie la position des buts dans le niveau
@@ -141,7 +148,7 @@ class IASolver extends IA {
     }
 
     // Renvoie vrai si la configuration existe déjà dans la table de hashage
-    private boolean dejaVu(Position joueur, Position[] posCaisses, int pere) {
+    private boolean dejaVu(Position joueur, Position[] posCaisses) {
       String cle = genererCle(joueur, posCaisses);
       if (etatsRencontres.containsKey(cle)) {
         return true;
@@ -165,37 +172,40 @@ class IASolver extends IA {
       return false;
     }
 
-    private void ajouteEtat(EtatDuNiveau[] etats, EtatDuNiveau etat) {
-      if (!dejaVu(etat.positionApresDeplacement, etat.posCaisses, etat.pere)) {
-        // Ajoute l'état au tableau des états et à la table de hashage
-        etats[indexAjout] = etat;
+    private void ajouteEtat(EtatDuNiveau etat, EtatDuNiveau nouvelEtat) {
+      if (!dejaVu(etat.positionApresDeplacement, etat.posCaisses)) {
+        System.out.println("Ajout de l'état");
+        // Ajoute l'état à la liste des états et à la table de hashage
+        etatQueue.suivant = nouvelEtat;
+        nouvelEtat.precedent = etatQueue;
+        etatQueue = nouvelEtat;
+        nouvelEtat.suivant = null;
+        nouvelEtat.pere = etat;
         etatsRencontres.put(genererCle(etat.positionApresDeplacement, etat.posCaisses), true);
-        indexAjout++;
+        longueur++;
       }
     }
 
-    private void extraireChemin(EtatDuNiveau[] etats) {
+    private void extraireChemin() {
       // Cas où l'on n'a pas trouvé de solution
-      if (!niveauTerminee(etats[indexAjout - 1].posCaisses)) {
-        System.out.println("Solution non trouvé");
+      if (etatRacine == null) {
+        System.out.println("Pas de solution trouvé");
         return;
       }
-      int[] chemin = new int[indexAjout];
-      int indexTemp = indexAjout - 1;
-      int indexChemin = 0;
-      // On remonte le chemin
-      while (etats[indexTemp].pere != EXISTE_PAS) {
-        chemin[indexChemin] = indexTemp;
-        indexTemp = etats[indexTemp].pere;
-        indexChemin++;
+      EtatDuNiveau etat = etatQueue;
+      int longueurMouvements = 0;
+      // On compte le nombre de mouvements
+      while (etat.pere != null) {
+        etat = etat.pere;
+        longueurMouvements++;
       }
-      MouvementJoueur[] mouvementsInner = new MouvementJoueur[indexChemin];
-      int indexCheminRetour = indexChemin - 1;
-      int indexMouvementJoueur = 0;
+      MouvementJoueur[] mouvementsInner = new MouvementJoueur[longueurMouvements];
       // On parcours le chemin à l'envers
-      while (indexMouvementJoueur < indexChemin) {
-        Position positionJoueur = etats[chemin[indexCheminRetour]].positionAvantDeplacement;
-        Position positionCaisse = etats[chemin[indexCheminRetour]].positionApresDeplacement;
+      etat = etatQueue;
+      int indexMouvementJoueur = 0;
+      while (etat.pere != null) {
+        Position positionJoueur = etat.positionAvantDeplacement;
+        Position positionCaisse = etat.positionApresDeplacement;
         int vecteurLigne = positionCaisse.ligne() - positionJoueur.ligne();
         int vecteurColonne = positionCaisse.colonne() - positionJoueur.colonne();
         Position positionCaisseDestination = new Position(positionCaisse.colonne() + vecteurColonne,
@@ -204,44 +214,32 @@ class IASolver extends IA {
         MouvementJoueur mouvement = new MouvementJoueur(positionJoueur, positionCaisse, positionCaisseDestination,
             vecteurLigne, vecteurColonne);
         mouvementsInner[indexMouvementJoueur] = mouvement;
-        indexCheminRetour--;
         indexMouvementJoueur++;
+        etat = etat.pere;
       }
 
       mouvements = mouvementsInner;
     }
 
     public void resoudre() {
-      EtatDuNiveau[] etats = new EtatDuNiveau[1000000];
-      // Ajoute l'état initial
-      ajouteEtat(
-          etats,
-          new EtatDuNiveau(new Position(niveau.colonnePousseur(), niveau.lignePousseur()),
-              new Position(EXISTE_PAS, EXISTE_PAS),
-              positionCaisses(niveau),
-              EXISTE_PAS));
+      EtatDuNiveau etat = etatRacine;
 
-      indexParcours = 0;
       boolean solutionTrouvee = false;
       // Tant qu'il reste des élements dans la liste
-      while (etats[indexParcours] != null && !solutionTrouvee) {
-        // On récupère l'état de l'indice actuel
-        EtatDuNiveau etatCourant = etats[indexParcours];
+      while (!solutionTrouvee && etat != null) {
         // On récupère les infos
-        int posL = etatCourant.positionApresDeplacement.ligne();
-        int posC = etatCourant.positionApresDeplacement.colonne();
-        Position[] posCaisses = etatCourant.posCaisses;
+        int posL = etat.positionApresDeplacement.ligne();
+        int posC = etat.positionApresDeplacement.colonne();
+        Position[] posCaisses = etat.posCaisses;
         // On récupère le niveau actuel
         Niveau niveauCourant = copieNiveauAvecCaisseAvecJoueur(niveauSansCaisse, posCaisses, posL, posC);
+        niveauCourant.affiche();
         // On récupère les cases accessibles
         CasesAccessibles cases = new CasesAccessibles(niveauCourant, new Position(posC, posL));
         // On récupère les mouvements possibles
         CaissesDeplacables caisses = new CaissesDeplacables(cases.nbCaissesDeplacables);
         caisses.trouverMouvementsCaisses(niveauCourant, cases);
 
-        if (indexParcours % 1000 == 0) {
-          System.out.println("Etat " + indexParcours + " | Pere : " + etatCourant.pere);
-        }
         // On ajoute tout les mouvements de caisse possibles au tableau
         for (int i = 0; i < caisses.nbMouvements; i++) {
           // On récupère la nouvelle position du joueur (position actuelle de la caisse)
@@ -270,10 +268,10 @@ class IASolver extends IA {
           // if (!mouvementBloquant(caisses.mouvementsPossibles[i][2])) {
           if (!mouvementBloquant(caisses.mouvementsPossibles[i][1])) {
             // On ajoute l'état
-            ajouteEtat(etats,
+            System.out.println("Etat pour " + posCNew + " " + posLNew);
+            ajouteEtat(etat,
                 new EtatDuNiveau(new Position(posCNew, posLNew), new Position(posCAncienne, posLAncienne),
-                    posCaissesNew,
-                    indexParcours));
+                    posCaissesNew));
             // On vérifie si le niveau est terminé
             if (niveauTerminee(posCaissesNew)) {
               System.out.println("Niveau terminé");
@@ -281,12 +279,13 @@ class IASolver extends IA {
               break;
             }
           }
-
         }
-        indexParcours++;
+        // On passe à l'état suivant
+        etat = etat.suivant;
       }
+
       // On construit le bon chemin
-      extraireChemin(etats);
+      extraireChemin();
     }
 
   }

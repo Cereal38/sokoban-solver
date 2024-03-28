@@ -11,6 +11,17 @@ Author: Aymeric du Peloux
 This file downloaded from the Sokoban levels page at
 http://sneezingtiger.com/sokoban/levels.html
 
+Level 1
+'MINICOSMOS 01'
+  #####
+###   #
+# $ # ##
+# #  . #
+#    # #
+## #   #
+ #@  ###
+ #####
+
 Level 24
 'MINICOSMOS 24'
       ####
