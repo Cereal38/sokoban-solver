@@ -10,21 +10,16 @@ import Global.Configuration;
 import Structures.Sequence;
 
 class IASolver extends IA {
-  // Couleurs au format RGB (rouge, vert, bleu, un octet par couleur)
-  final static int VERT = 0x00CC00;
-  final static int MARRON = 0xBB7755;
 
   class EtatDuNiveau {
-    int posLNvl; // Position du pousseur en ligne
-    int posCNvl; // Position du pousseur en colonne
+    Point positionApresDeplacement; // Position du pousseur après le déplacement de la caisse
     int posLAncienne; // Position du pousseur en ligne avant le déplacement de la caisse
     int posCAncienne; // Position du pousseur en colonne avant le déplacement de la caisse
     int[][] posCaisses; // Position des caisses
     int pere; // Indice du père dans la liste des états
 
-    EtatDuNiveau(int posL, int posC, int posLA, int posCA, int[][] posCaisses, int pere) {
-      this.posLNvl = posL;
-      this.posCNvl = posC;
+    EtatDuNiveau(Point positionApresDeplacement, int posLA, int posCA, int[][] posCaisses, int pere) {
+      this.positionApresDeplacement = positionApresDeplacement;
       this.posLAncienne = posLA;
       this.posCAncienne = posCA;
       this.posCaisses = posCaisses;
@@ -62,7 +57,8 @@ class IASolver extends IA {
       index = 0;
       // Ajoute l'état initial
       ajouteEtat(
-          new EtatDuNiveau(niveau.lignePousseur(), niveau.colonnePousseur(), -1, -1, positionCaisses(niveau), -1));
+          new EtatDuNiveau(new Point(niveau.lignePousseur(), niveau.colonnePousseur()), -1, -1, positionCaisses(niveau),
+              -1));
     }
 
     private int[][] positionsButs(Niveau niveau) {
@@ -137,7 +133,7 @@ class IASolver extends IA {
     // Return true if this configuration already exists in the array
     private boolean dejaVu(int posL, int posC, int[][] posCaisses) {
       for (int i = 0; i < index; i++) {
-        if (etats[i].posLNvl == posL && etats[i].posCNvl == posC) {
+        if (etats[i].positionApresDeplacement.y == posL && etats[i].positionApresDeplacement.x == posC) {
           boolean caisses = true;
           for (int j = 0; j < posCaisses.length; j++) {
             if (etats[i].posCaisses[j][0] != posCaisses[j][0] || etats[i].posCaisses[j][1] != posCaisses[j][1]) {
@@ -176,7 +172,7 @@ class IASolver extends IA {
     }
 
     private void ajouteEtat(EtatDuNiveau etat) {
-      if (!dejaVu(etat.posLNvl, etat.posCNvl, etat.posCaisses)) {
+      if (!dejaVu(etat.positionApresDeplacement.y, etat.positionApresDeplacement.x, etat.posCaisses)) {
         etats[index] = etat;
         index++;
       }
@@ -202,8 +198,8 @@ class IASolver extends IA {
       int indexMouvementJoueur = 0;
       // On parcours le chemin à l'envers
       while (indexMouvementJoueur < index_chemin) {
-        int posl = etats[chemin[indexChemin]].posLNvl;
-        int posc = etats[chemin[indexChemin]].posCNvl;
+        int posl = etats[chemin[indexChemin]].positionApresDeplacement.y;
+        int posc = etats[chemin[indexChemin]].positionApresDeplacement.x;
         // On calcul le mouvement du joueur
         int verticale = etats[chemin[indexChemin]].posLAncienne - posl;
         int horizontale = etats[chemin[indexChemin]].posCAncienne - posc;
@@ -223,8 +219,8 @@ class IASolver extends IA {
         // On récupère l'état de l'indice actuel
         EtatDuNiveau etatCourant = etats[index_temp];
         // On récupère les infos
-        int posL = etatCourant.posLNvl;
-        int posC = etatCourant.posCNvl;
+        int posL = etatCourant.positionApresDeplacement.y;
+        int posC = etatCourant.positionApresDeplacement.x;
         int[][] posCaisses = etatCourant.posCaisses;
         // On récupère le niveau actuel
         Niveau niveauCourant = copieNiveauAvecCaisseAvecJoueur(niveauSansCaisse, posCaisses, posL, posC);
@@ -263,7 +259,8 @@ class IASolver extends IA {
           // On vérifie si le mouvement est bloquant
           if (!mouvementBloquant(caisses.mouvementsPossibles[i][2])) {
             // On ajoute l'état
-            ajouteEtat(new EtatDuNiveau(posLNew, posCNew, posLAncienne, posCAncienne, posCaissesNew, index_temp));
+            ajouteEtat(new EtatDuNiveau(new Point(posCNew, posLNew), posLAncienne, posCAncienne, posCaissesNew,
+                index_temp));
             // On vérifie si le niveau est terminé
             if (niveauTerminee(posCaissesNew)) {
               System.out.println("Niveau terminé");
