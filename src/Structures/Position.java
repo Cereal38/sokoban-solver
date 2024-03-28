@@ -33,4 +33,8 @@ public class Position extends Point {
     return x;
   }
 
+  public boolean equals(Position p) {
+    return x == p.x && y == p.y;
+  }
+
 }

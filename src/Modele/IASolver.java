@@ -14,10 +14,11 @@ class IASolver extends IA {
   class EtatDuNiveau {
     Position positionApresDeplacement; // Position du pousseur après le déplacement de la caisse
     Position positionAvantDeplacement; // Position du pousseur avant le déplacement de la caisse
-    int[][] posCaisses; // Position des caisses
+    Position[] posCaisses; // Position des caisses
     int pere; // Indice du père dans la liste des états
 
-    EtatDuNiveau(Position positionApresDeplacement, Position positionAvantDeplacement, int[][] posCaisses, int pere) {
+    EtatDuNiveau(Position positionApresDeplacement, Position positionAvantDeplacement, Position[] posCaisses,
+        int pere) {
       this.positionApresDeplacement = positionApresDeplacement;
       this.positionAvantDeplacement = positionAvantDeplacement;
       this.posCaisses = posCaisses;
@@ -85,14 +86,13 @@ class IASolver extends IA {
     }
 
     // Renvoie la position des caisses dans le niveau
-    private int[][] positionCaisses(Niveau niveau) {
+    private Position[] positionCaisses(Niveau niveau) {
       int indexCaisse = 0;
-      int[][] posCaisses = new int[niveau.nbButs][2];
+      Position[] posCaisses = new Position[niveau.nbButs];
       for (int i = 0; i < niveau.lignes(); i++) {
         for (int j = 0; j < niveau.colonnes(); j++) {
           if (niveau.aCaisse(i, j)) {
-            posCaisses[indexCaisse][0] = i;
-            posCaisses[indexCaisse][1] = j;
+            posCaisses[indexCaisse] = new Position(j, i);
             indexCaisse++;
           }
         }
@@ -101,11 +101,11 @@ class IASolver extends IA {
     }
 
     // Renvoie true si toutes les caisses sont sur des buts
-    private boolean niveauTerminee(int[][] positionsCaisses) {
+    private boolean niveauTerminee(Position[] positionsCaisses) {
       int nbBut = 0;
       for (int i = 0; i < positionsCaisses.length; i++) {
         for (int j = 0; j < posButs.length; j++) {
-          if (positionsCaisses[i][0] == posButs[j].ligne() && positionsCaisses[i][1] == posButs[j].colonne()) {
+          if (positionsCaisses[i].equals(posButs[j])) {
             nbBut++;
           }
         }
@@ -127,31 +127,35 @@ class IASolver extends IA {
       return niveauSansCaisse;
     }
 
-    private Niveau copieNiveauAvecCaisseAvecJoueur(Niveau niveauSansCaisseSansJoueur, int[][] posCaisses,
+    private Niveau copieNiveauAvecCaisseAvecJoueur(Niveau niveauSansCaisseSansJoueur, Position[] posCaisses,
         int posLJoueur, int posCJoueur) {
       Niveau niveauAvecCaisseAvecJoueur = niveauSansCaisseSansJoueur.clone();
       // Parcours tout le niveau et ajoute les caisses
       for (int i = 0; i < posCaisses.length; i++) {
-        niveauAvecCaisseAvecJoueur.cases[posCaisses[i][0]][posCaisses[i][1]] = Niveau.CAISSE;
+        niveauAvecCaisseAvecJoueur.cases[posCaisses[i].ligne()][posCaisses[i].colonne()] = Niveau.CAISSE;
       }
       // Ajoute le joueur
       niveauAvecCaisseAvecJoueur.cases[posLJoueur][posCJoueur] = Niveau.POUSSEUR;
       return niveauAvecCaisseAvecJoueur;
     }
 
-    // Return true if this configuration already exists in the array
-    private boolean dejaVu(int posL, int posC, int[][] posCaisses) {
+    // Renvoie vrai si la configuration existe déjà dans le tableau
+    private boolean dejaVu(Position joueur, Position[] posCaisses) {
+      // On parcours tout le tableau
       for (int i = 0; i < index; i++) {
-        if (etats[i].positionApresDeplacement.ligne() == posL && etats[i].positionApresDeplacement.colonne() == posC) {
-          boolean caisses = true;
+        // On vérifie si le joueur est à la même position
+        if (joueur.equals(etats[i].positionApresDeplacement)) {
+          // On vérifie si les caisses sont à la même position
+          boolean caissesIdentiques = true;
           for (int j = 0; j < posCaisses.length; j++) {
-            if (etats[i].posCaisses[j][0] != posCaisses[j][0] || etats[i].posCaisses[j][1] != posCaisses[j][1]) {
-              caisses = false;
+            if (!posCaisses[j].equals(etats[i].posCaisses[j])) {
+              caissesIdentiques = false;
               break;
             }
           }
-          if (caisses)
+          if (caissesIdentiques) {
             return true;
+          }
         }
       }
       return false;
@@ -181,7 +185,7 @@ class IASolver extends IA {
     }
 
     private void ajouteEtat(EtatDuNiveau etat) {
-      if (!dejaVu(etat.positionApresDeplacement.ligne(), etat.positionApresDeplacement.colonne(), etat.posCaisses)) {
+      if (!dejaVu(etat.positionApresDeplacement, etat.posCaisses)) {
         etats[index] = etat;
         index++;
       }
@@ -230,7 +234,7 @@ class IASolver extends IA {
         // On récupère les infos
         int posL = etatCourant.positionApresDeplacement.ligne();
         int posC = etatCourant.positionApresDeplacement.colonne();
-        int[][] posCaisses = etatCourant.posCaisses;
+        Position[] posCaisses = etatCourant.posCaisses;
         // On récupère le niveau actuel
         Niveau niveauCourant = copieNiveauAvecCaisseAvecJoueur(niveauSansCaisse, posCaisses, posL, posC);
         // On récupère les cases accessibles
@@ -248,19 +252,17 @@ class IASolver extends IA {
           int posLAncienne = 0;
           int posCAncienne = 0;
           // On récupère la nouvelle position de la caisse
-          int[][] posCaissesNew = new int[posCaisses.length][2];
+          Position[] posCaissesNew = new Position[posCaisses.length];
           for (int j = 0; j < posCaisses.length; j++) {
             // Cas où la caisse bouge
-            if (posCaisses[j][0] == caisses.mouvementsPossibles[i][1].ligne()
-                && posCaisses[j][1] == caisses.mouvementsPossibles[i][1].colonne()) {
+            if (posCaisses[j].equals(caisses.mouvementsPossibles[i][1])) {
               posLAncienne = caisses.mouvementsPossibles[i][0].ligne();
               posCAncienne = caisses.mouvementsPossibles[i][0].colonne();
-              posCaissesNew[j][0] = caisses.mouvementsPossibles[i][2].ligne();
-              posCaissesNew[j][1] = caisses.mouvementsPossibles[i][2].colonne();
+              posCaissesNew[j] = new Position(caisses.mouvementsPossibles[i][2].colonne(),
+                  caisses.mouvementsPossibles[i][2].ligne());
               // Cas où la caisse ne bouge pas
             } else {
-              posCaissesNew[j][0] = posCaisses[j][0];
-              posCaissesNew[j][1] = posCaisses[j][1];
+              posCaissesNew[j] = new Position(posCaisses[j].colonne(), posCaisses[j].ligne());
             }
           }
 
