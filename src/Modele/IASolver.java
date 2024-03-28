@@ -387,7 +387,7 @@ class IASolver extends IA {
     // Toutes les caisses accessibles à l'instant t
     Point[] caissesAccessibles;
     // Toutes les cases accessibles à l'instant t
-    Point[] positions;
+    Position[] positions;
     int taille, nbEleme;
     int nbCaissesDeplacables = 0;
 
@@ -407,7 +407,7 @@ class IASolver extends IA {
 
       // On met à jour les cases accessibles par le joueur
       if (niveauInner.estOccupable(p.ligne(), p.colonne())) {
-        positions[nbEleme] = new Point(p.colonne(), p.ligne());
+        positions[nbEleme] = p;
         nbEleme++;
         // On met à jour les caisses accessibles par le joueur
       } else {
@@ -424,9 +424,9 @@ class IASolver extends IA {
 
     public void ajouterCasesAccessibles(Niveau niveauInner, Position joueur) {
       // On clear le tableau
-      positions = new Point[taille];
+      positions = new Position[taille];
       // On ajoute la position du pousseur
-      positions[0] = new Position(joueur.x, joueur.y);
+      positions[0] = joueur;
       nbEleme = 1;
       int i = 0;
       while (i < nbEleme) {
