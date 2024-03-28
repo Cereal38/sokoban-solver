@@ -398,24 +398,24 @@ class IASolver extends IA {
       ajouterCasesAccessibles(niveauInner, new Point(pousseur.x, pousseur.y));
     }
 
-    private void checkAndAddPosition(Niveau niveauInner, int l, int c) {
+    private void checkAndAddPosition(Niveau niveauInner, Position p) {
       // On vérifie si la case existe
-      if (existe(new Position(c, l)) != EXISTE_PAS) {
+      if (existe(p) != EXISTE_PAS) {
         return;
       }
 
       // On met à jour les cases accessibles par le joueur
-      if (niveauInner.estOccupable(l, c)) {
-        position[nbEleme] = new Point(c, l);
+      if (niveauInner.estOccupable(p.ligne(), p.colonne())) {
+        position[nbEleme] = new Point(p.colonne(), p.ligne());
         nbEleme++;
         // On met à jour les caisses accessibles par le joueur
       } else {
-        if (niveauInner.aCaisse(l, c)) {
+        if (niveauInner.aCaisse(p.ligne(), p.colonne())) {
           for (int i = 0; i < nbCaissesDeplacables; i++) {
-            if (caissesAccessibles[i].x == c && caissesAccessibles[i].y == l)
+            if (caissesAccessibles[i].x == p.colonne() && caissesAccessibles[i].y == p.ligne())
               return;
           }
-          caissesAccessibles[nbCaissesDeplacables] = new Point(c, l);
+          caissesAccessibles[nbCaissesDeplacables] = new Point(p.colonne(), p.ligne());
           nbCaissesDeplacables++;
         }
       }
@@ -431,12 +431,12 @@ class IASolver extends IA {
       while (i < nbEleme) {
 
         // On regarde chaque case adjacente si elle n'est pas déjà dans le tableau et si
-        // elle est
-        // accessible, si oui on l'ajoute
-        checkAndAddPosition(niveauInner, position[i].y - 1, position[i].x);
-        checkAndAddPosition(niveauInner, position[i].y + 1, position[i].x);
-        checkAndAddPosition(niveauInner, position[i].y, position[i].x - 1);
-        checkAndAddPosition(niveauInner, position[i].y, position[i].x + 1);
+        // elle est accessible, si oui on l'ajoute
+        Position p = new Position(position[i].x, position[i].y);
+        checkAndAddPosition(niveauInner, p.haut());
+        checkAndAddPosition(niveauInner, p.bas());
+        checkAndAddPosition(niveauInner, p.gauche());
+        checkAndAddPosition(niveauInner, p.droite());
 
         i++;
       }
