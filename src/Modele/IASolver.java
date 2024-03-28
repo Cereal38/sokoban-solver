@@ -348,11 +348,12 @@ class IASolver extends IA {
     int taille, nb_eleme;
     int nbCaissesDeplacables = 0;
 
+    // On récupère les cases et caisses accessibles par le joueur depuis sa position
     public CasesAccessibles(Niveau niveauInner, Point pousseur) {
       taille = niveauInner.lignes() * niveauInner.colonnes();
       nb_eleme = 1;
       caissesAccessibles = new Point[niveauInner.nbButs];
-      ajouterCasesAccessibles(niveauInner, pousseur.y, pousseur.x);
+      ajouterCasesAccessibles(niveauInner, new Point(pousseur.x, pousseur.y));
     }
 
     private void checkAndAddPosition(Niveau niveauInner, int l, int c) {
@@ -375,11 +376,11 @@ class IASolver extends IA {
       }
     }
 
-    public void ajouterCasesAccessibles(Niveau niveauInner, int l, int c) {
+    public void ajouterCasesAccessibles(Niveau niveauInner, Point joueur) {
       // On clear le tableau
       position = new Point[taille];
       // On ajoute la position du pousseur
-      position[0] = new Point(c, l);
+      position[0] = joueur;
       nb_eleme = 1;
       int i = 0;
       while (i < nb_eleme) {
