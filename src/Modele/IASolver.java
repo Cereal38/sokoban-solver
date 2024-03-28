@@ -474,7 +474,8 @@ class IASolver extends IA {
       Coup coup = new Coup();
       System.out.println("Joueur : " + joueurL + " " + joueurC + " | Mouvement "
           + mouvements[i].mouvementL + " " + mouvements[i].mouvementC);
-      System.out.println("Position " + i + " : " + mouvements[i].posL + " " + mouvements[i].posC + " | Mouvement "
+      System.out.println("Destination " + i + " : " + (mouvements[i].posL - mouvements[i].mouvementL) + " "
+          + (mouvements[i].posC - mouvements[i].mouvementC) + " | Mouvement "
           + mouvements[i].mouvementL + " " + mouvements[i].mouvementC);
       coup.deplacementPousseur(joueurL, joueurC, mouvements[i].posL - mouvements[i].mouvementL,
           mouvements[i].posC - mouvements[i].mouvementC);
