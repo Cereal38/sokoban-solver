@@ -4,43 +4,9 @@
 
 package Modele;
 
-import java.awt.Point;
-
 import Global.Configuration;
+import Structures.Position;
 import Structures.Sequence;
-
-class Position extends Point {
-  // Takes column (x) and line (y) as parameters
-
-  Position(int column, int line) {
-    super(column, line);
-  }
-
-  Position haut() {
-    return new Position(x, y - 1);
-  }
-
-  Position bas() {
-    return new Position(x, y + 1);
-  }
-
-  Position gauche() {
-    return new Position(x - 1, y);
-  }
-
-  Position droite() {
-    return new Position(x + 1, y);
-  }
-
-  int ligne() {
-    return y;
-  }
-
-  int colonne() {
-    return x;
-  }
-
-}
 
 class IASolver extends IA {
   private static int EXISTE_PAS = -1;
