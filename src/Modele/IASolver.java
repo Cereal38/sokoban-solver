@@ -59,14 +59,14 @@ class IASolver extends IA {
     }
 
     private int[][] positionsButs(Niveau niveau) {
-      int index_buts = 0;
+      int indexButs = 0;
       int[][] posButs = new int[niveau.nbButs][2];
       for (int i = 0; i < niveau.lignes(); i++) {
         for (int j = 0; j < niveau.colonnes(); j++) {
           if (niveau.aBut(i, j)) {
-            posButs[index_buts][0] = i;
-            posButs[index_buts][1] = j;
-            index_buts++;
+            posButs[indexButs][0] = i;
+            posButs[indexButs][1] = j;
+            indexButs++;
           }
         }
       }
@@ -75,14 +75,14 @@ class IASolver extends IA {
     }
 
     private int[][] positionCaisses(Niveau niveau) {
-      int index_caisse = 0;
+      int indexCaisse = 0;
       int[][] posCaisses = new int[niveau.nbButs][2];
       for (int i = 0; i < niveau.lignes(); i++) {
         for (int j = 0; j < niveau.colonnes(); j++) {
           if (niveau.aCaisse(i, j)) {
-            posCaisses[index_caisse][0] = i;
-            posCaisses[index_caisse][1] = j;
-            index_caisse++;
+            posCaisses[indexCaisse][0] = i;
+            posCaisses[indexCaisse][1] = j;
+            indexCaisse++;
           }
         }
       }
@@ -90,15 +90,15 @@ class IASolver extends IA {
     }
 
     private boolean niveauTerminee(int[][] positionsCaisses) {
-      int nb_but = 0;
+      int nbBut = 0;
       for (int i = 0; i < positionsCaisses.length; i++) {
         for (int j = 0; j < posButs.length; j++) {
           if (positionsCaisses[i][0] == posButs[j][0] && positionsCaisses[i][1] == posButs[j][1]) {
-            nb_but++;
+            nbBut++;
           }
         }
       }
-      return nb_but == posButs.length;
+      return nbBut == posButs.length;
     }
 
     private Niveau copieNiveauSansCaisseSansJoueur(Niveau niveauAvecCaissesAvecJoueur) {
@@ -182,27 +182,27 @@ class IASolver extends IA {
         return;
       }
       int[] chemin = new int[index];
-      int index_temp = index - 1;
-      int index_chemin = 0;
-      while (etats[index_temp].pere != -1) {
-        chemin[index_chemin] = index_temp;
-        index_temp = etats[index_temp].pere;
-        index_chemin++;
+      int indexTemp = index - 1;
+      int indexChemin = 0;
+      while (etats[indexTemp].pere != -1) {
+        chemin[indexChemin] = indexTemp;
+        indexTemp = etats[indexTemp].pere;
+        indexChemin++;
       }
       // On recup l'état, on a la pos du joueur +
-      MouvementJoueur[] mouvementsInner = new MouvementJoueur[index_chemin];
-      int indexChemin = index_chemin - 1;
+      MouvementJoueur[] mouvementsInner = new MouvementJoueur[indexChemin];
+      int indexCheminRetour = indexChemin - 1;
       int indexMouvementJoueur = 0;
       // On parcours le chemin à l'envers
-      while (indexMouvementJoueur < index_chemin) {
-        int posl = etats[chemin[indexChemin]].positionApresDeplacement.y;
-        int posc = etats[chemin[indexChemin]].positionApresDeplacement.x;
+      while (indexMouvementJoueur < indexChemin) {
+        int posl = etats[chemin[indexCheminRetour]].positionApresDeplacement.y;
+        int posc = etats[chemin[indexCheminRetour]].positionApresDeplacement.x;
         // On calcul le mouvement du joueur
-        int verticale = etats[chemin[indexChemin]].positionAvantDeplacement.y - posl;
-        int horizontale = etats[chemin[indexChemin]].positionAvantDeplacement.x - posc;
+        int verticale = etats[chemin[indexCheminRetour]].positionAvantDeplacement.y - posl;
+        int horizontale = etats[chemin[indexCheminRetour]].positionAvantDeplacement.x - posc;
         MouvementJoueur mouvement = new MouvementJoueur(new Point(posc, posl), verticale, horizontale);
         mouvementsInner[indexMouvementJoueur] = mouvement;
-        indexChemin--;
+        indexCheminRetour--;
         indexMouvementJoueur++;
       }
 
@@ -210,11 +210,11 @@ class IASolver extends IA {
     }
 
     public void resoudre() {
-      int index_temp = 0;
+      int indexTemp = 0;
       // Tant qu'il reste des élements dans la liste
-      while (etats[index_temp] != null) {
+      while (etats[indexTemp] != null) {
         // On récupère l'état de l'indice actuel
-        EtatDuNiveau etatCourant = etats[index_temp];
+        EtatDuNiveau etatCourant = etats[indexTemp];
         // On récupère les infos
         int posL = etatCourant.positionApresDeplacement.y;
         int posC = etatCourant.positionApresDeplacement.x;
@@ -226,10 +226,10 @@ class IASolver extends IA {
         // On récupère les mouvements possibles
         CaissesDeplacables caisses = new CaissesDeplacables(cases.nbCaissesDeplacables);
         caisses.trouverMouvementsCaisses(niveauCourant, cases);
-        System.out.println("Etat " + index_temp);
+        System.out.println("Etat " + indexTemp);
         niveauCourant.affiche();
         // On ajoute tout les mouvements de caisse possibles au tableau
-        for (int i = 0; i < caisses.nb_mouvements; i++) {
+        for (int i = 0; i < caisses.nbMouvements; i++) {
           // On récupère la nouvelle position du joueur (position actuelle de la caisse)
           int posLNew = caisses.mouvementsPossibles[i][1].y;
           int posCNew = caisses.mouvementsPossibles[i][1].x;
@@ -258,7 +258,7 @@ class IASolver extends IA {
             // On ajoute l'état
             ajouteEtat(
                 new EtatDuNiveau(new Point(posCNew, posLNew), new Point(posCAncienne, posLAncienne), posCaissesNew,
-                    index_temp));
+                    indexTemp));
             // On vérifie si le niveau est terminé
             if (niveauTerminee(posCaissesNew)) {
               System.out.println("Niveau terminé");
@@ -267,7 +267,7 @@ class IASolver extends IA {
           }
 
         }
-        index_temp++;
+        indexTemp++;
       }
       // On construit le bon chemin
       extraireChemin();
@@ -277,7 +277,7 @@ class IASolver extends IA {
 
   class CaissesDeplacables {
     Point[][] mouvementsPossibles;
-    int nb_mouvements = 0;
+    int nbMouvements = 0;
     int nbCaissesDeplacables;
 
     CaissesDeplacables(int nbCaisses) {
@@ -289,7 +289,7 @@ class IASolver extends IA {
     // [ [(2,3), (2, 4), (2, 5)], [(6, 7), (5, 7), (4, 7)] ]
     public void trouverMouvementsCaisses(Niveau niveau, CasesAccessibles casesAccessibles) {
       // On reset les infos
-      nb_mouvements = 0;
+      nbMouvements = 0;
       mouvementsPossibles = new Point[niveau.nbButs * 4][3];
       for (int i = 0; i < nbCaissesDeplacables; i++) {
         // On regarde si la case en haut est accessible
@@ -301,39 +301,39 @@ class IASolver extends IA {
         if (casesAccessibles.existe(caisseY - 1, caisseX) != -1) {
           if (niveau.estOccupable(caisseY + 1, caisseX)) {
             // Poisition du joueur requise pour déplacer la caisse
-            mouvementsPossibles[nb_mouvements][0] = new Point(caisseX, caisseY - 1);
+            mouvementsPossibles[nbMouvements][0] = new Point(caisseX, caisseY - 1);
             // Position de la caisse
-            mouvementsPossibles[nb_mouvements][1] = new Point(caisseX, caisseY);
+            mouvementsPossibles[nbMouvements][1] = new Point(caisseX, caisseY);
             // Future position de la caisse
-            mouvementsPossibles[nb_mouvements][2] = new Point(caisseX, caisseY + 1);
-            nb_mouvements++;
+            mouvementsPossibles[nbMouvements][2] = new Point(caisseX, caisseY + 1);
+            nbMouvements++;
           }
         }
         // Pareil pour le bas
         if (casesAccessibles.existe(caisseY + 1, caisseX) != -1) {
           if (niveau.estOccupable(caisseY - 1, caisseX)) {
-            mouvementsPossibles[nb_mouvements][0] = new Point(caisseX, caisseY + 1);
-            mouvementsPossibles[nb_mouvements][1] = new Point(caisseX, caisseY);
-            mouvementsPossibles[nb_mouvements][2] = new Point(caisseX, caisseY - 1);
-            nb_mouvements++;
+            mouvementsPossibles[nbMouvements][0] = new Point(caisseX, caisseY + 1);
+            mouvementsPossibles[nbMouvements][1] = new Point(caisseX, caisseY);
+            mouvementsPossibles[nbMouvements][2] = new Point(caisseX, caisseY - 1);
+            nbMouvements++;
           }
         }
         // Pareil pour la droite
         if (casesAccessibles.existe(caisseY, caisseX - 1) != -1) {
           if (niveau.estOccupable(caisseY, caisseX + 1)) {
-            mouvementsPossibles[nb_mouvements][0] = new Point(caisseX - 1, caisseY);
-            mouvementsPossibles[nb_mouvements][1] = new Point(caisseX, caisseY);
-            mouvementsPossibles[nb_mouvements][2] = new Point(caisseX + 1, caisseY);
-            nb_mouvements++;
+            mouvementsPossibles[nbMouvements][0] = new Point(caisseX - 1, caisseY);
+            mouvementsPossibles[nbMouvements][1] = new Point(caisseX, caisseY);
+            mouvementsPossibles[nbMouvements][2] = new Point(caisseX + 1, caisseY);
+            nbMouvements++;
           }
         }
         // Pareil pour la gauche
         if (casesAccessibles.existe(caisseY, caisseX + 1) != -1) {
           if (niveau.estOccupable(caisseY, caisseX - 1)) {
-            mouvementsPossibles[nb_mouvements][0] = new Point(caisseX + 1, caisseY);
-            mouvementsPossibles[nb_mouvements][1] = new Point(caisseX, caisseY);
-            mouvementsPossibles[nb_mouvements][2] = new Point(caisseX - 1, caisseY);
-            nb_mouvements++;
+            mouvementsPossibles[nbMouvements][0] = new Point(caisseX + 1, caisseY);
+            mouvementsPossibles[nbMouvements][1] = new Point(caisseX, caisseY);
+            mouvementsPossibles[nbMouvements][2] = new Point(caisseX - 1, caisseY);
+            nbMouvements++;
           }
         }
       }
@@ -345,13 +345,13 @@ class IASolver extends IA {
     // Toutes les caisses accessibles à l'instant t
     Point[] caissesAccessibles;
     Point[] position;
-    int taille, nb_eleme;
+    int taille, nbEleme;
     int nbCaissesDeplacables = 0;
 
     // On récupère les cases et caisses accessibles par le joueur depuis sa position
     public CasesAccessibles(Niveau niveauInner, Point pousseur) {
       taille = niveauInner.lignes() * niveauInner.colonnes();
-      nb_eleme = 1;
+      nbEleme = 1;
       caissesAccessibles = new Point[niveauInner.nbButs];
       ajouterCasesAccessibles(niveauInner, new Point(pousseur.x, pousseur.y));
     }
@@ -360,8 +360,8 @@ class IASolver extends IA {
       if (existe(l, c) == -1) {
         // On met à jour les cases accessibles par le joueur
         if (niveauInner.estOccupable(l, c)) {
-          position[nb_eleme] = new Point(c, l);
-          nb_eleme++;
+          position[nbEleme] = new Point(c, l);
+          nbEleme++;
           // On met à jour les caisses accessibles par le joueur
         } else {
           if (niveauInner.aCaisse(l, c)) {
@@ -381,9 +381,9 @@ class IASolver extends IA {
       position = new Point[taille];
       // On ajoute la position du pousseur
       position[0] = joueur;
-      nb_eleme = 1;
+      nbEleme = 1;
       int i = 0;
-      while (i < nb_eleme) {
+      while (i < nbEleme) {
 
         // On regarde chaque case adjacente si elle n'est pas déjà dans le tableau et si
         // elle est
@@ -399,7 +399,7 @@ class IASolver extends IA {
 
     // Renvoie l'indice de l'élément si il existe, -1 sinon
     public int existe(int l, int c) {
-      for (int i = 0; i < nb_eleme; i++) {
+      for (int i = 0; i < nbEleme; i++) {
         if (position[i].x == c && position[i].y == l)
           return i;
       }
@@ -408,10 +408,10 @@ class IASolver extends IA {
 
     // Double la taille du tableau si il est complet
     protected void redimensionne() {
-      if (taille >= nb_eleme) {
+      if (taille >= nbEleme) {
         taille = taille * 2;
         Point[] nouveau = new Point[taille];
-        for (int i = 0; i < nb_eleme; i++)
+        for (int i = 0; i < nbEleme; i++)
           nouveau[i] = position[i];
         position = nouveau;
       }
@@ -471,7 +471,7 @@ class IASolver extends IA {
       joueurL = solution.mouvements[i].joueur.y;
     }
 
-    // for (int i = 0; i < cases.nb_eleme - 1; i++) {
+    // for (int i = 0; i < cases.nbEleme - 1; i++) {
     // Coup coup = new Coup();
     // coup.deplacementPousseur(cases.position[i].y, cases.position[i].x,
     // cases.position[i + 1].y,
@@ -483,8 +483,8 @@ class IASolver extends IA {
     // resultat.insereQueue(coup);
     // }
     // Coup coup = new Coup();
-    // coup.deplacementPousseur(cases.position[cases.nb_eleme - 1].y,
-    // cases.position[cases.nb_eleme - 1].x,
+    // coup.deplacementPousseur(cases.position[cases.nbEleme - 1].y,
+    // cases.position[cases.nbEleme - 1].x,
     // cases.position[0].y,
     // cases.position[0].x);
     // resultat.insereQueue(coup);
