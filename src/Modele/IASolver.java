@@ -27,15 +27,14 @@ class IASolver extends IA {
   }
 
   class MouvementJoueur {
-    Position joueur;
-    int mouvementL; // Mouvement du joueur en ligne (1 -> bas, -1 -> haut, 0 -> pas de mouvement)
-    int mouvementC; // Mouvement du joueur en colonne (1 -> droite, -1 -> gauche, 0 -> pas de
-                    // mouvement)
+    Position joueur; // Emplacement du joueur pour déplacer la caisse
+    Position caisse; // Emplacement de la caisse
+    Position caisseDestination; // Emplacement de la caisse après le déplacement
 
-    MouvementJoueur(Position joueur, int mouvementL, int mouvementC) {
+    MouvementJoueur(Position joueur, Position caisse, Position caisseDestination) {
       this.joueur = joueur;
-      this.mouvementL = mouvementL;
-      this.mouvementC = mouvementC;
+      this.caisse = caisse;
+      this.caisseDestination = caisseDestination;
     }
   }
 
@@ -191,12 +190,14 @@ class IASolver extends IA {
       int indexMouvementJoueur = 0;
       // On parcours le chemin à l'envers
       while (indexMouvementJoueur < indexChemin) {
-        int posl = etats[chemin[indexCheminRetour]].positionApresDeplacement.ligne();
-        int posc = etats[chemin[indexCheminRetour]].positionApresDeplacement.colonne();
+        Position positionJoueur = etats[chemin[indexCheminRetour]].positionAvantDeplacement;
+        Position positionCaisse = etats[chemin[indexCheminRetour]].positionApresDeplacement;
+        int vecteurLigne = positionCaisse.ligne() - positionJoueur.ligne();
+        int vecteurColonne = positionCaisse.colonne() - positionJoueur.colonne();
+        Position positionCaisseDestination = new Position(positionCaisse.colonne() + vecteurColonne,
+            positionCaisse.ligne() + vecteurLigne);
         // On calcul le mouvement du joueur
-        int verticale = etats[chemin[indexCheminRetour]].positionAvantDeplacement.ligne() - posl;
-        int horizontale = etats[chemin[indexCheminRetour]].positionAvantDeplacement.colonne() - posc;
-        MouvementJoueur mouvement = new MouvementJoueur(new Position(posc, posl), verticale, horizontale);
+        MouvementJoueur mouvement = new MouvementJoueur(positionJoueur, positionCaisse, positionCaisseDestination);
         mouvementsInner[indexMouvementJoueur] = mouvement;
         indexCheminRetour--;
         indexMouvementJoueur++;
@@ -206,6 +207,7 @@ class IASolver extends IA {
     }
 
     public void resoudre() {
+      System.out.println("NIVEAU : " + niveau.nom());
       indexParcours = 0;
       boolean solutionTrouvee = false;
       // Tant qu'il reste des élements dans la liste
@@ -431,14 +433,22 @@ class IASolver extends IA {
     int joueurC = niveau.colonnePousseur();
     // On effectue les mouvements
     for (int i = 0; i < mouvements.length; i++) {
+      Position joueurDestination = mouvements[i].joueur;
+      Position caisse = mouvements[i].caisse;
+      Position caisseDestination = mouvements[i].caisseDestination;
+      System.out
+          .println("Joueur : " + joueurL + " " + joueurC + "\nJoueur Destination : " + joueurDestination.ligne() + " "
+              + joueurDestination.colonne() + "\nCaisse : " + caisse.ligne() + " " + caisse.colonne()
+              + "\nCaisse Destination : "
+              + caisseDestination.ligne() + " " + caisseDestination.colonne());
       Coup coup = new Coup();
-      coup.deplacementPousseur(joueurL, joueurC, mouvements[i].joueur.ligne() - mouvements[i].mouvementL,
-          mouvements[i].joueur.colonne() - mouvements[i].mouvementC);
+      // On récupère les mouvements
+      coup.deplacementPousseur(joueurL, joueurC, joueurDestination.ligne(), joueurDestination.colonne());
+      // On déplace la caisse
+      coup.deplacementCaisse(caisse.ligne(), caisse.colonne(), caisseDestination.ligne(), caisseDestination.colonne());
       resultat.insereQueue(coup);
-      coup = niveau.deplace(mouvements[i].mouvementL, mouvements[i].mouvementC);
-      resultat.insereQueue(coup);
-      joueurC = solution.mouvements[i].joueur.colonne();
-      joueurL = solution.mouvements[i].joueur.ligne();
+      joueurL = joueurDestination.ligne();
+      joueurC = joueurDestination.colonne();
     }
 
     return resultat;
