@@ -27,16 +27,31 @@ class IASolver extends IA {
     }
   }
 
+  // class MouvementJoueur {
+  // int posL; // Position du joueur en ligne
+  // int posC; // Position du joueur en colonne
+  // int mouvementL; // Mouvement du joueur en ligne (1 -> bas, -1 -> haut, 0 ->
+  // pas de mouvement)
+  // int mouvementC; // Mouvement du joueur en colonne (1 -> droite, -1 -> gauche,
+  // 0 -> pas de
+  // // mouvement)
+
+  // MouvementJoueur(int posL, int posC, int mouvementL, int mouvementC) {
+  // this.posL = posL;
+  // this.posC = posC;
+  // this.mouvementL = mouvementL;
+  // this.mouvementC = mouvementC;
+  // }
+  // }
+
   class MouvementJoueur {
-    int posL; // Position du joueur en ligne
-    int posC; // Position du joueur en colonne
+    Point joueur;
     int mouvementL; // Mouvement du joueur en ligne (1 -> bas, -1 -> haut, 0 -> pas de mouvement)
     int mouvementC; // Mouvement du joueur en colonne (1 -> droite, -1 -> gauche, 0 -> pas de
                     // mouvement)
 
-    MouvementJoueur(int posL, int posC, int mouvementL, int mouvementC) {
-      this.posL = posL;
-      this.posC = posC;
+    MouvementJoueur(Point joueur, int mouvementL, int mouvementC) {
+      this.joueur = joueur;
       this.mouvementL = mouvementL;
       this.mouvementC = mouvementC;
     }
@@ -203,7 +218,7 @@ class IASolver extends IA {
         // On calcul le mouvement du joueur
         int verticale = etats[chemin[indexChemin]].posLAncienne - posl;
         int horizontale = etats[chemin[indexChemin]].posCAncienne - posc;
-        MouvementJoueur mouvement = new MouvementJoueur(posl, posc, verticale, horizontale);
+        MouvementJoueur mouvement = new MouvementJoueur(new Point(posc, posl), verticale, horizontale);
         mouvementsInner[indexMouvementJoueur] = mouvement;
         indexChemin--;
         indexMouvementJoueur++;
@@ -469,18 +484,13 @@ class IASolver extends IA {
     // On effectue les mouvements
     for (int i = 0; i < mouvements.length; i++) {
       Coup coup = new Coup();
-      System.out.println("Joueur : " + joueurL + " " + joueurC + " | Mouvement "
-          + mouvements[i].mouvementL + " " + mouvements[i].mouvementC);
-      System.out.println("Destination " + i + " : " + (mouvements[i].posL - mouvements[i].mouvementL) + " "
-          + (mouvements[i].posC - mouvements[i].mouvementC) + " | Mouvement "
-          + mouvements[i].mouvementL + " " + mouvements[i].mouvementC);
-      coup.deplacementPousseur(joueurL, joueurC, mouvements[i].posL - mouvements[i].mouvementL,
-          mouvements[i].posC - mouvements[i].mouvementC);
+      coup.deplacementPousseur(joueurL, joueurC, mouvements[i].joueur.y - mouvements[i].mouvementL,
+          mouvements[i].joueur.x - mouvements[i].mouvementC);
       resultat.insereQueue(coup);
       coup = niveau.deplace(mouvements[i].mouvementL, mouvements[i].mouvementC);
       resultat.insereQueue(coup);
-      joueurC = solution.mouvements[i].posC;
-      joueurL = solution.mouvements[i].posL;
+      joueurC = solution.mouvements[i].joueur.x;
+      joueurL = solution.mouvements[i].joueur.y;
     }
 
     // for (int i = 0; i < cases.nb_eleme - 1; i++) {
