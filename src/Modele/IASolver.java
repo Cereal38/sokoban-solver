@@ -222,7 +222,7 @@ class IASolver extends IA {
         // On récupère le niveau actuel
         Niveau niveauCourant = copieNiveauAvecCaisseAvecJoueur(niveauSansCaisse, posCaisses, posL, posC);
         // On récupère les cases accessibles
-        CasesAccessibles cases = new CasesAccessibles(niveauCourant, posL, posC);
+        CasesAccessibles cases = new CasesAccessibles(niveauCourant, new Point(posC, posL));
         // On récupère les mouvements possibles
         CaissesDeplacables caisses = new CaissesDeplacables(cases.nbCaissesDeplacables);
         caisses.trouverMouvementsCaisses(niveauCourant, cases);
@@ -348,11 +348,11 @@ class IASolver extends IA {
     int taille, nb_eleme;
     int nbCaissesDeplacables = 0;
 
-    public CasesAccessibles(Niveau niveauInner, int l, int c) {
+    public CasesAccessibles(Niveau niveauInner, Point pousseur) {
       taille = niveauInner.lignes() * niveauInner.colonnes();
       nb_eleme = 1;
       caissesAccessibles = new Point[niveauInner.nbButs];
-      ajouterCasesAccessibles(niveauInner, l, c);
+      ajouterCasesAccessibles(niveauInner, pousseur.y, pousseur.x);
     }
 
     private void checkAndAddPosition(Niveau niveauInner, int l, int c) {
@@ -383,12 +383,6 @@ class IASolver extends IA {
       nb_eleme = 1;
       int i = 0;
       while (i < nb_eleme) {
-
-        // Affiche le contenu du tableau sur une ligne
-        // for (int j = 0; j < nb_eleme; j++) {
-        // System.out.print(position[j].x + " " + position[j].y + " | ");
-        // }
-        // System.out.println();
 
         // On regarde chaque case adjacente si elle n'est pas déjà dans le tableau et si
         // elle est
