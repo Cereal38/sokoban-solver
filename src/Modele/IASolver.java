@@ -184,7 +184,7 @@ class IASolver extends IA {
 
     // On vérifie si on ne va pas mettre la caisse dans un coin (qui n'est pas un
     // but)
-    private boolean mouvementBloquant(Point posCaisse) {
+    private boolean mouvementBloquant(Position posCaisse) {
       // On vérifie les cas ou il y a un mur dans 2 coins adjacents
       boolean caseHautMur = niveau.aMur(posCaisse.y - 1, posCaisse.x);
       boolean caseDroiteMur = niveau.aMur(posCaisse.y, posCaisse.x + 1);
