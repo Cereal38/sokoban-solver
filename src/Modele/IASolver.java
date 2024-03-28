@@ -75,7 +75,7 @@ class IASolver extends IA {
   class Solution {
     EtatDuNiveau[] etats; // TODO: Move it to resoudre() (Avoir useless ram usage)
     MouvementJoueur[] mouvements;
-    Point[] posButs;
+    Position[] posButs;
     Niveau niveauSansCaisse;
     int index = 0;
 
@@ -94,13 +94,13 @@ class IASolver extends IA {
     }
 
     // Renvoie la position des buts dans le niveau
-    private Point[] positionsButs(Niveau niveau) {
+    private Position[] positionsButs(Niveau niveau) {
       int indexButs = 0;
-      Point[] posButs = new Point[niveau.nbButs];
+      Position[] posButs = new Position[niveau.nbButs];
       for (int i = 0; i < niveau.lignes(); i++) {
         for (int j = 0; j < niveau.colonnes(); j++) {
           if (niveau.aBut(i, j)) {
-            posButs[indexButs] = new Point(j, i);
+            posButs[indexButs] = new Position(j, i);
             indexButs++;
           }
         }
