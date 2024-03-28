@@ -13,36 +13,17 @@ class IASolver extends IA {
 
   class EtatDuNiveau {
     Point positionApresDeplacement; // Position du pousseur après le déplacement de la caisse
-    int posLAncienne; // Position du pousseur en ligne avant le déplacement de la caisse
-    int posCAncienne; // Position du pousseur en colonne avant le déplacement de la caisse
+    Point positionAvantDeplacement; // Position du pousseur avant le déplacement de la caisse
     int[][] posCaisses; // Position des caisses
     int pere; // Indice du père dans la liste des états
 
-    EtatDuNiveau(Point positionApresDeplacement, int posLA, int posCA, int[][] posCaisses, int pere) {
+    EtatDuNiveau(Point positionApresDeplacement, Point positionAvantDeplacement, int[][] posCaisses, int pere) {
       this.positionApresDeplacement = positionApresDeplacement;
-      this.posLAncienne = posLA;
-      this.posCAncienne = posCA;
+      this.positionAvantDeplacement = positionAvantDeplacement;
       this.posCaisses = posCaisses;
       this.pere = pere;
     }
   }
-
-  // class MouvementJoueur {
-  // int posL; // Position du joueur en ligne
-  // int posC; // Position du joueur en colonne
-  // int mouvementL; // Mouvement du joueur en ligne (1 -> bas, -1 -> haut, 0 ->
-  // pas de mouvement)
-  // int mouvementC; // Mouvement du joueur en colonne (1 -> droite, -1 -> gauche,
-  // 0 -> pas de
-  // // mouvement)
-
-  // MouvementJoueur(int posL, int posC, int mouvementL, int mouvementC) {
-  // this.posL = posL;
-  // this.posC = posC;
-  // this.mouvementL = mouvementL;
-  // this.mouvementC = mouvementC;
-  // }
-  // }
 
   class MouvementJoueur {
     Point joueur;
@@ -72,7 +53,8 @@ class IASolver extends IA {
       index = 0;
       // Ajoute l'état initial
       ajouteEtat(
-          new EtatDuNiveau(new Point(niveau.lignePousseur(), niveau.colonnePousseur()), -1, -1, positionCaisses(niveau),
+          new EtatDuNiveau(new Point(niveau.lignePousseur(), niveau.colonnePousseur()), new Point(-1, -1),
+              positionCaisses(niveau),
               -1));
     }
 
@@ -216,8 +198,8 @@ class IASolver extends IA {
         int posl = etats[chemin[indexChemin]].positionApresDeplacement.y;
         int posc = etats[chemin[indexChemin]].positionApresDeplacement.x;
         // On calcul le mouvement du joueur
-        int verticale = etats[chemin[indexChemin]].posLAncienne - posl;
-        int horizontale = etats[chemin[indexChemin]].posCAncienne - posc;
+        int verticale = etats[chemin[indexChemin]].positionAvantDeplacement.y - posl;
+        int horizontale = etats[chemin[indexChemin]].positionAvantDeplacement.x - posc;
         MouvementJoueur mouvement = new MouvementJoueur(new Point(posc, posl), verticale, horizontale);
         mouvementsInner[indexMouvementJoueur] = mouvement;
         indexChemin--;
@@ -274,8 +256,9 @@ class IASolver extends IA {
           // On vérifie si le mouvement est bloquant
           if (!mouvementBloquant(caisses.mouvementsPossibles[i][2])) {
             // On ajoute l'état
-            ajouteEtat(new EtatDuNiveau(new Point(posCNew, posLNew), posLAncienne, posCAncienne, posCaissesNew,
-                index_temp));
+            ajouteEtat(
+                new EtatDuNiveau(new Point(posCNew, posLNew), new Point(posCAncienne, posLAncienne), posCaissesNew,
+                    index_temp));
             // On vérifie si le niveau est terminé
             if (niveauTerminee(posCaissesNew)) {
               System.out.println("Niveau terminé");
