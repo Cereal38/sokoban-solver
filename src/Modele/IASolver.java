@@ -212,7 +212,7 @@ class IASolver extends IA {
     }
 
     public void resoudre() {
-      EtatDuNiveau[] etats = new EtatDuNiveau[1000000];
+      EtatDuNiveau[] etats = new EtatDuNiveau[100000000];
       // Ajoute l'état initial
       ajouteEtat(
           etats,
@@ -434,6 +434,9 @@ class IASolver extends IA {
   @Override
   public Sequence<Coup> joue() {
     Sequence<Coup> resultat = Configuration.nouvelleSequence();
+    // Niveau simulé pour retenir la position des caisses afin de pouvoir trouver le
+    // chemin le plus court par le pousseur
+    Niveau niveauSimulation = niveau.clone();
 
     // On test si Solution retire bien les caisses
     Solution solution = new Solution();
@@ -456,12 +459,21 @@ class IASolver extends IA {
       // On récupère les mouvements
       coup.deplacementPousseur(joueurL, joueurC, joueurDestination.ligne(), joueurDestination.colonne());
       resultat.insereQueue(coup);
+
       // On déplace la caisse
       coup = new Coup();
       coup.deplacementCaisse(caisse.ligne(), caisse.colonne(), caisseDestination.ligne(), caisseDestination.colonne());
       resultat.insereQueue(coup);
+
+      // On déplace la caisse
+      niveauSimulation.cases[caisse.ligne()][caisse.colonne()] = Niveau.VIDE;
+      niveauSimulation.cases[caisseDestination.ligne()][caisseDestination.colonne()] = Niveau.CAISSE;
+
       joueurL = joueurDestination.ligne();
       joueurC = joueurDestination.colonne();
+
+      // On affiche le niveau simulé
+      niveauSimulation.affiche();
     }
 
     return resultat;
