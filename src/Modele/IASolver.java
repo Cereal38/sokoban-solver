@@ -431,6 +431,99 @@ class IASolver extends IA {
 
   }
 
+  // Renvoie vrai si l'élément est déjà présent dans le tableau
+  private boolean dejaPresent(Position[] etatsVisites, Position p) {
+    for (int i = 0; i < etatsVisites.length; i++) {
+      if (etatsVisites[i] != null && etatsVisites[i].equals(p)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Renvoie vrai si l'élément peut être ajouté au tableau (n'est pas déjà présent
+  // et est une case vide)
+  private boolean peutEtreAjoutee(Niveau niveau, Position[] etatsVisites, Position p) {
+    // On vérifie si la case est vide
+    if (!niveau.estOccupable(p.ligne(), p.colonne())) {
+      return false;
+    }
+    // On vérifie si la case n'est pas déjà dans le tableau
+    return !dejaPresent(etatsVisites, p);
+  }
+
+  // Renvoit un teableau de position qui représente le chemin le plus court entre
+  // 2 positions
+  private Position[] trouverPlusCourtChemin(Niveau niveau, Position depart, Position arrivee) {
+
+    // Tableau des états visités
+    Position[] etatsVisites = new Position[niveau.lignes() * niveau.colonnes()];
+    // Tableau des indices des pères des états visités
+    int peres[] = new int[niveau.lignes() * niveau.colonnes()];
+
+    // Ajoute la position de départ
+    etatsVisites[0] = depart;
+    peres[0] = -1;
+    int indexParcours = 0;
+    int indexAjout = 1;
+    while (!dejaPresent(etatsVisites, arrivee)) {
+
+      Position caseCourante = etatsVisites[indexParcours];
+
+      if (peutEtreAjoutee(niveau, etatsVisites, caseCourante.haut())) {
+        if (!dejaPresent(etatsVisites, arrivee)) {
+          etatsVisites[indexAjout] = caseCourante.haut();
+          peres[indexAjout] = indexParcours;
+          indexAjout++;
+        }
+      }
+      if (peutEtreAjoutee(niveau, etatsVisites, caseCourante.bas())) {
+        if (!dejaPresent(etatsVisites, arrivee)) {
+          etatsVisites[indexAjout] = caseCourante.bas();
+          peres[indexAjout] = indexParcours;
+          indexAjout++;
+        }
+      }
+      if (peutEtreAjoutee(niveau, etatsVisites, caseCourante.gauche())) {
+        if (!dejaPresent(etatsVisites, arrivee)) {
+          etatsVisites[indexAjout] = caseCourante.gauche();
+          peres[indexAjout] = indexParcours;
+          indexAjout++;
+        }
+      }
+      if (peutEtreAjoutee(niveau, etatsVisites, caseCourante.droite())) {
+        if (!dejaPresent(etatsVisites, arrivee)) {
+          etatsVisites[indexAjout] = caseCourante.droite();
+          peres[indexAjout] = indexParcours;
+          indexAjout++;
+        }
+      }
+      indexParcours++;
+    }
+
+    if (indexParcours <= 1)
+      return null;
+    // Reconstruit le chemin
+    Position[] cheminRaw = new Position[indexParcours];
+    int indexChemin = 0;
+    int indexParcoursChemin = indexAjout - 1;
+    while (peres[indexParcoursChemin] != -1) {
+      cheminRaw[indexChemin] = etatsVisites[indexParcoursChemin];
+      indexChemin++;
+      indexParcoursChemin = peres[indexParcoursChemin];
+    }
+    // On ajoute la position de départ
+    cheminRaw[indexChemin] = depart;
+
+    // On renverse le tableau et on lui donne la bonne taille
+    Position[] chemin = new Position[indexChemin + 1];
+    for (int i = 0; i < indexChemin + 1; i++) {
+      chemin[i] = cheminRaw[indexChemin - i];
+    }
+
+    return chemin;
+  }
+
   @Override
   public Sequence<Coup> joue() {
     Sequence<Coup> resultat = Configuration.nouvelleSequence();
@@ -456,21 +549,44 @@ class IASolver extends IA {
       Position caisse = mouvements[i].caisse;
       Position caisseDestination = mouvements[i].caisseDestination;
       Coup coup = new Coup();
-      // On récupère les mouvements
-      coup.deplacementPousseur(joueurL, joueurC, joueurDestination.ligne(), joueurDestination.colonne());
-      resultat.insereQueue(coup);
+
+      // On construit le chemin le plus court entre la position de départ et d'arrivée
+      // du pousseur
+      Position[] chemin = trouverPlusCourtChemin(niveauSimulation, new Position(joueurC, joueurL), joueurDestination);
+
+      if (chemin != null) {
+        // On affiche tout le chemin
+        for (int j = 0; j < chemin.length; j++) {
+          System.out.println(chemin[j]);
+        }
+        System.out.println("===================================");
+        for (int j = 0; j < chemin.length - 1; j++) {
+          int vecteurLigne = -(chemin[j].ligne() - chemin[j + 1].ligne());
+          int vecteurColonne = -(chemin[j].colonne() - chemin[j + 1].colonne());
+          coup = new Coup();
+          coup = niveau.deplace(vecteurLigne, vecteurColonne);
+          resultat.insereQueue(coup);
+        }
+      }
+      // coup.deplacementPousseur(joueurL, joueurC, joueurDestination.ligne(),
+      // joueurDestination.colonne());
+      // resultat.insereQueue(coup);
 
       // On déplace la caisse
       coup = new Coup();
-      coup.deplacementCaisse(caisse.ligne(), caisse.colonne(), caisseDestination.ligne(), caisseDestination.colonne());
+      // coup.deplacementCaisse(caisse.ligne(), caisse.colonne(),
+      // caisseDestination.ligne(), caisseDestination.colonne());
+      int vecteurLigne = -(caisse.ligne() - caisseDestination.ligne());
+      int vecteurColonne = -(caisse.colonne() - caisseDestination.colonne());
+      coup = niveau.deplace(vecteurLigne, vecteurColonne);
       resultat.insereQueue(coup);
 
       // On déplace la caisse
       niveauSimulation.cases[caisse.ligne()][caisse.colonne()] = Niveau.VIDE;
       niveauSimulation.cases[caisseDestination.ligne()][caisseDestination.colonne()] = Niveau.CAISSE;
 
-      joueurL = joueurDestination.ligne();
-      joueurC = joueurDestination.colonne();
+      joueurL = caisse.ligne();
+      joueurC = caisse.colonne();
 
       // On affiche le niveau simulé
       niveauSimulation.affiche();
