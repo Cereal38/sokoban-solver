@@ -209,8 +209,14 @@ public class Niveau implements Cloneable {
     return (cases[l][c] & CAISSE) != 0;
   }
 
+  // Renvoie vrai si la case n'est pas un mur, pas une caisse et pas un pousseur
   public boolean estOccupable(int l, int c) {
     return (cases[l][c] & (MUR | CAISSE | POUSSEUR)) == 0;
+  }
+
+  // Renvoie vrai si la case n'est pas un mur et n'est pas une caisse
+  public boolean peutAccepterCaisse(int l, int c) {
+    return (cases[l][c] & (MUR | CAISSE)) == 0;
   }
 
   public boolean estTermine() {
