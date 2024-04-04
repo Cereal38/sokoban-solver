@@ -178,7 +178,7 @@ class IASolver extends IA {
       // Cas où l'on n'a pas trouvé de solution
       if (!niveauTerminee(etats[indexAjout - 1].posCaisses)) {
         System.out.println("Solution non trouvé");
-        return;
+        System.exit(1);
       }
       int[] chemin = new int[indexAjout];
       int indexTemp = indexAjout - 1;
