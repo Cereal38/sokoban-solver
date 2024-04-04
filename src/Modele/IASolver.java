@@ -6,8 +6,6 @@ package Modele;
 
 import java.util.HashMap;
 
-import javax.swing.text.Style;
-
 import Global.Configuration;
 import Structures.Position;
 import Structures.Sequence;
@@ -468,7 +466,7 @@ class IASolver extends IA {
     peres[0] = -1;
     int indexParcours = 0;
     int indexAjout = 1;
-    
+
     while (!dejaPresent(etatsVisites, arrivee)) {
 
       Position caseCourante = etatsVisites[indexParcours];
@@ -504,11 +502,10 @@ class IASolver extends IA {
       indexParcours++;
     }
 
-    System.out.println("IndexParcours:" + indexParcours);
     if (indexParcours == 0)
       return null;
     // Reconstruit le chemin
-    Position[] cheminRaw = new Position[indexParcours+1];
+    Position[] cheminRaw = new Position[indexParcours + 1];
     int indexChemin = 0;
     int indexParcoursChemin = indexAjout - 1;
     while (peres[indexParcoursChemin] != -1) {
@@ -559,11 +556,6 @@ class IASolver extends IA {
       Position[] chemin = trouverPlusCourtChemin(niveauSimulation, new Position(joueurC, joueurL), joueurDestination);
 
       if (chemin != null) {
-        // On affiche tout le chemin
-         for (int j = 0; j < chemin.length; j++) {
-          System.out.println(chemin[j]);
-        }
-        System.out.println("===================================");
         for (int j = 0; j < chemin.length - 1; j++) {
           int vecteurLigne = -(chemin[j].ligne() - chemin[j + 1].ligne());
           int vecteurColonne = -(chemin[j].colonne() - chemin[j + 1].colonne());
@@ -572,12 +564,11 @@ class IASolver extends IA {
           resultat.insereQueue(coup);
         }
       }
-      System.out.println("JoueurDestination: " + joueurDestination);
       niveauSimulation.cases[joueurL][joueurC] = Niveau.VIDE;
       // coup.deplacementPousseur(joueurL, joueurC, joueurDestination.ligne(),
       // joueurDestination.colonne());
       // resultat.insereQueue(coup);
-      
+
       // On déplace la caisse
       coup = new Coup();
       // coup.deplacementCaisse(caisse.ligne(), caisse.colonne(),
@@ -586,18 +577,13 @@ class IASolver extends IA {
       int vecteurColonne = -(caisse.colonne() - caisseDestination.colonne());
       coup = niveau.deplace(vecteurLigne, vecteurColonne);
       resultat.insereQueue(coup);
-      
+
       // On déplace la caisse
-      System.out.println("Ancienne caisse: " + caisse);
-      System.out.println("Nouvelle caisse: " + caisseDestination);
       niveauSimulation.cases[caisse.ligne()][caisse.colonne()] = Niveau.POUSSEUR;
       niveauSimulation.cases[caisseDestination.ligne()][caisseDestination.colonne()] = Niveau.CAISSE;
 
       joueurL = caisse.ligne();
       joueurC = caisse.colonne();
-
-      // On affiche le niveau simulé
-      niveauSimulation.affiche();
     }
 
     return resultat;
