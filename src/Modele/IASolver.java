@@ -47,7 +47,7 @@ class IASolver extends IA {
 
   class Solution {
     private HashMap<String, Boolean> etatsRencontres = new HashMap<>();
-    MouvementJoueur[] mouvements;
+    MouvementJoueur[] mouvements; // Contient les mouvements de caisse de la solution
     Position[] posButs;
     Niveau niveauSansCaisse;
     int indexAjout = 0; // Index auquel on ajoute les états
@@ -532,9 +532,11 @@ class IASolver extends IA {
     // chemin le plus court par le pousseur
     Niveau niveauSimulation = niveau.clone();
 
-    // On test si Solution retire bien les caisses
+    // On cherche les mouvements de caisse pour terminer le niveau
     Solution solution = new Solution();
     solution.resoudre();
+
+    System.out.println("Nombre de mouvements de caisse : " + solution.mouvements.length);
 
     // On se déplace de la position joueur à la position devant caisse
     // Ensuite on fait le déplacement de la caisse
